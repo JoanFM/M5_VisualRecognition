@@ -41,6 +41,7 @@ def main():
             T.RandomAffine(degrees=0, translate=(0.2,0.2))
         ]
     )
+    print('Transforms defined.')
     """
     translate = tuple of maximum absolute fraction for horizontal and vertical translations. 
     For example translate=(a, b), then horizontal shift is randomly sampled in the range
@@ -56,11 +57,13 @@ def main():
         'train': DataLoader(train_set, batch_size=batch_size, shuffle=shuffle, num_workers=0),
         'val': DataLoader(val_set, batch_size=batch_size, shuffle=shuffle, num_workers=0)
     }
+    print('Data Loaded.')
 
     # Prepare Optimizers and Loss
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.2, patience=10)
+    print('Optimizers Defined.')
 
     # Training
     loss_train_rec = []
@@ -68,6 +71,7 @@ def main():
     acc_train_rec = []
     acc_val_acc = []
 
+    print('Train')
     for epoch in tqdm(range(epochs)):
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
@@ -78,7 +82,7 @@ def main():
             running_loss = 0.0
             running_corrects = 0
             # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
+            for i, (inputs, labels) in tqdm(enumerate(dataloaders[phase])):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 # zero the parameter gradients
