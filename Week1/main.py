@@ -117,7 +117,7 @@ def main():
             else:
                 loss_val_rec.append(running_loss / len(dataloaders[phase].dataset))
                 acc_val_rec.append(running_corrects / len(dataloaders[phase].dataset))
-                print('val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_acc[-1]))
+                print('val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_rec[-1]))
         scheduler.step(epoch)
 
     # Plot results
