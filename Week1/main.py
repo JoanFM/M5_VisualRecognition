@@ -2,11 +2,12 @@ import os
 from tqdm import tqdm
 
 import torch
+import torchvision.transforms as T
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 
-from models import *
+from models.SE_sequential import SE_v3
 
 
 def main():
@@ -15,77 +16,114 @@ def main():
     epochs = 200
     input_shape = (256,256,3)
     num_classes = 10
-    learning_rate = 1e-3
+    learning_rate = 2e-3
     data_dir = '/home/mcv/datasets/MIT_split'
     work_dir = '/home/grupo07/week1/work'
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
 
-    # Create model
-    net = SE_v3(input_shape=input_shape, num_classes=num_classes).cuda()
+    # Get GPU device
+    if torch.cuda.is_available(): 
+        device = torch.device(torch.cuda.get_device_name(0))
+        print('Using GPU with ['+str(torch.cuda.device_count())+'] GPUs')
+    else:
+        print('Using CPU (##NOT RECOMMENDED!)')
+        device = torch.device('cpu')
 
-    # TODO: Prepare data
+    # Create Model
+    model = SE_v3().to(device)
 
-    # Train model
-    print('Using GPU: ', torch.cuda.get_device_name(0))
+    # Prepare data
+    transforms = T.Compose(
+        [
+            T.RandomHorizontalFlip(p=0.5),
+            T.RandomRotation(degrees=5),
+            T.RandomAffine(degrees=0, translate=(0.2,0.2))
+        ]
+    )
+    """
+    translate = tuple of maximum absolute fraction for horizontal and vertical translations. 
+    For example translate=(a, b), then horizontal shift is randomly sampled in the range
+    -img_width * a < dx < img_width * a and vertical shift is randomly sampled in the range
+    -img_height * b < dy < img_height * b. Will not translate by default.
+    """
+    train_set = torchvision.datasets.ImageFolder(
+        root = data_dir+os.sep+'train',
+        transform = transforms)
+    )
+    val_set = torchvision.datasets.ImageFolder(root=data_dir+os.sep+'test')
+    dataloaders = {
+        'train': DataLoader(train_set, batch_size=batch_size, shuffle=shuffle, num_workers=0),
+        'val': DataLoader(val_set, batch_size=batch_size, shuffle=shuffle, num_workers=0)
+    }
 
+    # Prepare Optimizers and Loss
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(net.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.2, patience=10)
 
+    # Training
+    loss_train_rec = []
+    loss_val_rec = []
+    acc_train_rec = []
+    acc_val_acc = []
+
     for epoch in tqdm(range(epochs)):
-        running_loss = 0.0
-        for i, data in tqdm(enumerate(trainloader)):
-            inputs, labels = data
-            inputs = inputs.cuda()
-            labels = labels.cuda()
-            optimizer.zero_grad()
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-            print('[{}, {}] loss: {:.5f}'.format(epoch + 1, i + 1, running_loss))
+        # Each epoch has a training and validation phase
+        for phase in ['train', 'val']:
+            if phase == 'train':
+                model.train()  # Set model to training mode
+            else:
+                model.eval()   # Set model to evaluate mode
             running_loss = 0.0
+            running_corrects = 0
+            # Iterate over data.
+            for inputs, labels in dataloaders[phase]:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+                # zero the parameter gradients
+                optimizer.zero_grad()
+                with torch.set_grad_enabled(phase == 'train'):
+                    outputs = model(inputs)
+                    loss = criterion(outputs, labels)
+                _, preds = torch.max(outputs, 1)
+                # backward + optimize only if in training phase
+                if phase == 'train':
+                    loss.backward()
+                    optimizer.step()
+                # statistics
+                running_loss += loss.item()
+                running_corrects += torch.sum(preds == labels.data).item()
+                print('[{}, {}] loss: {:.5f}'.format(epoch + 1, i + 1, running_loss))
+            if phase is 'train':
+                loss_train_rec.append(running_loss / len(dataloaders[phase].dataset))
+                acc_train_rec.append(running_corrects.double() / len(dataloaders[phase].dataset))
+            else:
+                loss_val_rec.append(running_loss / len(dataloaders[phase].dataset))
+                acc_val_rec.append(running_corrects.double() / len(dataloaders[phase].dataset))
 
-        # TODO: Compute train loss
+        scheduler.step(epoch)
 
-        # Compute train accuracy
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for data in trainloader:
-                inputs, labels = data
-                inputs = inputs.cuda()
-                labels = labels.cuda()
-                outputs = net(inputs)
-                _, predicted = torch.max(outputs.data, 1)
-                total = += labels.size(0)
-                correct = (predicted == labels).sum().item()
-        acc = correct / total
-
-        # TODO: Compute validation loss
-
-        # Compute validation accuracy
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for data in validationloader:
-                inputs, labels = data
-                inputs = inputs.cuda()
-                labels = labels.cuda()
-                outputs = net(inputs)
-                _, predicted = torch.max(outputs.data, 1)
-                total = += labels.size(0)
-                correct = (predicted == labels).sum().item()
-        val_acc = correct / total
-
-        print('[{}] loss: {:.5f} acc: {:.5f} val_loss: {:.5f} val_acc: {:.5f}'.format(epoch + 1, loss, acc, val_loss, val_acc))
-
-        # ReduceLROnPlateau
-        scheduler.step(val_loss)
-
-
+    # Plot results
+    # ACCURACY
+    epoch_axis = list(range(epoch))
+    plt.plot(epoch_axis,acc_train_rec)
+    plt.plot(epoch_axis,acc_val_rec)
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.savefig(work_dir+os.sep+'accuracy.jpg')
+    plt.close()
+    # LOSS
+    plt.plot(epoch_axis,loss_train_rec)
+    plt.plot(epoch_axis,loss_val_rec)
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.savefig(work_dir+os.sep+'loss.jpg')
+    plt.close()
+    
 if __name__ == '__main__':
     main()
