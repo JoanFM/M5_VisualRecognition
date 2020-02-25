@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 import torch
 import torchvision.transforms as T
+import torchvision
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
@@ -24,7 +25,7 @@ def main():
 
     # Get GPU device
     if torch.cuda.is_available(): 
-        device = torch.device(torch.cuda.get_device_name(0))
+        device = torch.device('cuda:0')
         print('Using GPU with ['+str(torch.cuda.device_count())+'] GPUs')
     else:
         print('Using CPU (##NOT RECOMMENDED!)')
@@ -34,11 +35,17 @@ def main():
     model = SE_v3().to(device)
 
     # Prepare data
-    transforms = T.Compose(
+    train_transforms = T.Compose(
         [
             T.RandomHorizontalFlip(p=0.5),
             T.RandomRotation(degrees=5),
-            T.RandomAffine(degrees=0, translate=(0.2,0.2))
+            T.RandomAffine(degrees=0, translate=(0.2,0.2)),
+            T.ToTensor()
+        ]
+    )
+    val_transforms = T.Compose(
+        [
+            T.ToTensor()
         ]
     )
     print('Transforms defined.')
@@ -50,12 +57,14 @@ def main():
     """
     train_set = torchvision.datasets.ImageFolder(
         root = data_dir+os.sep+'train',
-        transform = transforms)
+        transform = train_transforms
     )
-    val_set = torchvision.datasets.ImageFolder(root=data_dir+os.sep+'test')
+    val_set = torchvision.datasets.ImageFolder(
+        root=data_dir+os.sep+'test',
+        transform = val_transforms)
     dataloaders = {
-        'train': DataLoader(train_set, batch_size=batch_size, shuffle=shuffle, num_workers=0),
-        'val': DataLoader(val_set, batch_size=batch_size, shuffle=shuffle, num_workers=0)
+        'train': DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0),
+        'val': DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=0)
     }
     print('Data Loaded.')
 
@@ -69,7 +78,7 @@ def main():
     loss_train_rec = []
     loss_val_rec = []
     acc_train_rec = []
-    acc_val_acc = []
+    acc_val_rec = []
 
     print('Train')
     for epoch in tqdm(range(epochs)):
@@ -89,6 +98,7 @@ def main():
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
+                    outputs = outputs.squeeze()
                     loss = criterion(outputs, labels)
                 _, preds = torch.max(outputs, 1)
                 # backward + optimize only if in training phase
@@ -98,14 +108,16 @@ def main():
                 # statistics
                 running_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data).item()
-                print('[{}, {}] loss: {:.5f}'.format(epoch + 1, i + 1, running_loss))
+                print('[{}, {}] loss: {:.5f}'.format(epoch + 1, i + 1, loss.item()))
+            print('[{}, {}]'.format(epoch + 1, i + 1))
             if phase is 'train':
                 loss_train_rec.append(running_loss / len(dataloaders[phase].dataset))
-                acc_train_rec.append(running_corrects.double() / len(dataloaders[phase].dataset))
+                acc_train_rec.append(running_corrects / len(dataloaders[phase].dataset))
+                print('train_loss: {:.5f} train_acc: {:.5f}'.format(loss_train_rec[-1], acc_train_rec[-1]))
             else:
                 loss_val_rec.append(running_loss / len(dataloaders[phase].dataset))
-                acc_val_rec.append(running_corrects.double() / len(dataloaders[phase].dataset))
-
+                acc_val_rec.append(running_corrects / len(dataloaders[phase].dataset))
+                print('val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_acc[-1]))
         scheduler.step(epoch)
 
     # Plot results
