@@ -7,9 +7,11 @@ import torchvision
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from models.SE_sequential import SE_v3
 
+EXPERIMENT_NAME="experiment"
 
 def data_loaders(data_dir, batch_size, train_transforms, val_transforms):
     train_set = torchvision.datasets.ImageFolder(
@@ -43,6 +45,7 @@ def transforms():
 
 
 def train(model, dataloaders, optimizer, scheduler, epochs):
+	writer = SummaryWriter(EXPERIMENT_NAME)
     loss_train_rec = []
     loss_val_rec = []
     acc_train_rec = []
@@ -81,12 +84,17 @@ def train(model, dataloaders, optimizer, scheduler, epochs):
                 loss_train_rec.append(running_loss / len(dataloaders[phase].dataset))
                 acc_train_rec.append(running_corrects / len(dataloaders[phase].dataset))
                 print('train_loss: {:.5f} train_acc: {:.5f}'.format(loss_train_rec[-1], acc_train_rec[-1]))
+                writer.add_scalar('Loss/train', loss_train_rec[-1], epoch)
+                writer.add_scalar('Acc/train', acc_train_rec[-1], epoch)
             else:
                 loss_val_rec.append(running_loss / len(dataloaders[phase].dataset))
                 acc_val_rec.append(running_corrects / len(dataloaders[phase].dataset))
                 print('val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_rec[-1]))
+                writer.add_scalar('Loss/valid', loss_val_rec[-1], epoch)
+                writer.add_scalar('Acc/valid', acc_val_rec[-1], epoch)
         scheduler.step(epoch)
-        return (loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec)
+    writer.close()
+    return (loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec)
 
 
 def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs):
