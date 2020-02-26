@@ -8,6 +8,7 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 
 from models.SE_sequential import SE_v3
 
@@ -31,8 +32,7 @@ def transforms():
     train_transforms = T.Compose(
         [
             T.RandomHorizontalFlip(p=0.5),
-            T.RandomRotation(degrees=5),
-            T.RandomAffine(degrees=0, translate=(0.2,0.2)),
+            T.RandomAffine(degrees=5, translate=None),
             T.ToTensor()
         ]
     )
@@ -83,13 +83,13 @@ def train(model, dataloaders, optimizer, scheduler, epochs):
             if phase is 'train':
                 loss_train_rec.append(running_loss / len(dataloaders[phase].dataset))
                 acc_train_rec.append(running_corrects / len(dataloaders[phase].dataset))
-                print('train_loss: {:.5f} train_acc: {:.5f}'.format(loss_train_rec[-1], acc_train_rec[-1]))
+                print('--------------------------------- train_loss: {:.5f} train_acc: {:.5f}'.format(loss_train_rec[-1], acc_train_rec[-1]))
                 writer.add_scalar('Loss/train', loss_train_rec[-1], epoch)
                 writer.add_scalar('Acc/train', acc_train_rec[-1], epoch)
             else:
                 loss_val_rec.append(running_loss / len(dataloaders[phase].dataset))
                 acc_val_rec.append(running_corrects / len(dataloaders[phase].dataset))
-                print('val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_rec[-1]))
+                print('--------------------------------- val_loss: {:.5f} val_acc: {:.5f}'.format(loss_val_rec[-1], acc_val_rec[-1]))
                 writer.add_scalar('Loss/valid', loss_val_rec[-1], epoch)
                 writer.add_scalar('Acc/valid', acc_val_rec[-1], epoch)
         scheduler.step(epoch)
@@ -100,13 +100,13 @@ def train(model, dataloaders, optimizer, scheduler, epochs):
 def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs):
     # Plot results
     # ACCURACY
-    epoch_axis = list(range(num_epochs))
+    epoch_axis = list(range(num_epochs+1))
     plt.plot(epoch_axis,acc_train_rec)
     plt.plot(epoch_axis,acc_val_rec)
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.legend(['train', 'validation'], loc='upper left')
+    plt.legend(['train', 'validation'], loc='lower right')
     plt.savefig(work_dir+os.sep+'accuracy.jpg')
     plt.close()
     # LOSS
@@ -115,7 +115,7 @@ def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs):
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
-    plt.legend(['train', 'validation'], loc='upper left')
+    plt.legend(['train', 'validation'], loc='upper right')
     plt.savefig(work_dir+os.sep+'loss.jpg')
     plt.close()
 
