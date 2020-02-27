@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 
-from models.SE_sequential import SE_v3
+from SE_sequential import SE_v3, SE_v2
 
 EXPERIMENT_NAME="experiment"
 
@@ -44,7 +44,7 @@ def transforms():
     return (train_transforms, val_transforms)
 
 
-def train(model, dataloaders, optimizer, scheduler, epochs):
+def train(model, dataloaders, optimizer, criterion, scheduler, epochs, device):
 	writer = SummaryWriter(EXPERIMENT_NAME)
     loss_train_rec = []
     loss_val_rec = []
@@ -97,10 +97,10 @@ def train(model, dataloaders, optimizer, scheduler, epochs):
     return (loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec)
 
 
-def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs):
+def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs, work_dir):
     # Plot results
     # ACCURACY
-    epoch_axis = list(range(num_epochs+1))
+    epoch_axis = list(range(num_epochs))
     plt.plot(epoch_axis,acc_train_rec)
     plt.plot(epoch_axis,acc_val_rec)
     plt.title('model accuracy')
@@ -123,12 +123,12 @@ def plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, num_epochs):
 def main():
     # Parameters
     batch_size = 16
-    epochs = 200
+    epochs = 100
     input_shape = (256,256,3)
     num_classes = 10
     learning_rate = 2e-3
-    data_dir = '/home/mcv/datasets/MIT_split'
-    work_dir = '/home/grupo07/week1/work'
+    data_dir = '/content/drive/My Drive/MCV/M5-Project/MIT_split'
+    work_dir = '/content/drive/My Drive/MCV/M5-Project/work/m5-work'
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
 
@@ -162,8 +162,8 @@ def main():
     print('Optimizers Defined.')
 
     # Training
-    (loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec) = train(model, dataloaders, optimizer, scheduler, epochs)
-    plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, epochs)
+    (loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec) = train(model, dataloaders, optimizer, criterion, scheduler, epochs, device)
+    plot(loss_train_rec, loss_val_rec, acc_train_rec, acc_val_rec, epochs, work_dir)
     
 if __name__ == '__main__':
     main()
