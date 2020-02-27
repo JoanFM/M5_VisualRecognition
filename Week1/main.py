@@ -45,7 +45,7 @@ def transforms():
 
 
 def train(model, dataloaders, optimizer, criterion, scheduler, epochs, device):
-	writer = SummaryWriter(EXPERIMENT_NAME)
+    writer = SummaryWriter(EXPERIMENT_NAME)
     loss_train_rec = []
     loss_val_rec = []
     acc_train_rec = []
