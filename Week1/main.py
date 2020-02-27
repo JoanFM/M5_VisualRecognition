@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 
-from SE_sequential import SE_v3, SE_v2
+from models.SE_sequential import SE_v3, SE_v2
 
 EXPERIMENT_NAME="experiment"
 
@@ -127,8 +127,8 @@ def main():
     input_shape = (256,256,3)
     num_classes = 10
     learning_rate = 2e-3
-    data_dir = '/content/drive/My Drive/MCV/M5-Project/MIT_split'
-    work_dir = '/content/drive/My Drive/MCV/M5-Project/work/m5-work'
+    data_dir = '~/MIT_split'
+    work_dir = '~/work'
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
 
