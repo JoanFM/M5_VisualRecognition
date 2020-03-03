@@ -29,11 +29,14 @@ def evaluate(cfg):
     val_loader = build_detection_test_loader(cfg, "MIT_split_test")
     inference_on_dataset(trainer.model, val_loader, evaluator)
 
+def get_empty_metadata_dict():
+    return []
 
 def inference_task(model_name, model_file):
     # Loading training and test examples
     dataloader = Inference_Dataloader(MIT_DATA_DIR)
     dataset = dataloader.load_data()
+    DatasetCatalog.register("MIT_dataset", get_empty_metadata_dict) 
 
     # Load model and checkpoint
     cfg = get_cfg()
@@ -48,9 +51,9 @@ def inference_task(model_name, model_file):
         outputs = predictor(img)
         v = Visualizer(
             img[:, :, ::-1],
-            metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[i]),
+            metadata=MetadataCatalog.get("MIT_dataset"),
             scale=0.8, 
-            instance_mode=ColorMode.IMAGE_BW)
+            instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
