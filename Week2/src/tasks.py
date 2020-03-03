@@ -12,8 +12,8 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
-from utils import Inference_Dataloader, Train_KITTI_Dataloader, Test_KITTI_Dataloader
-from utils import MIT_DATA_DIR, CATEGORIES
+from .utils import Inference_Dataloader, Train_KITTI_Dataloader, Test_KITTI_Dataloader
+from .utils import MIT_DATA_DIR, CATEGORIES
 
 
 DATASET_PATH = '/home/grupo07/MIT_split'
@@ -48,7 +48,7 @@ def inference_task(model_name, model_file):
         outputs = predictor(img)
         v = Visualizer(
             img[:, :, ::-1],
-            metadata=metadata
+            metadata=metadata,
             scale=0.8, 
             instance_mode=ColorMode.IMAGE_BW)
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))

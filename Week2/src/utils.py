@@ -80,7 +80,7 @@ class Train_KITTI_Dataloader():
             for line in lines:
                 columns = line.split(' ')
                 category = CATEGORIES[columns[0]]
-                bbox = [columns[4], columns[5], columns[6] columns[7]]
+                bbox = [columns[4], columns[5], columns[6], columns[7]]
                 obj = {
                     "bbox": bbox,
                     "bbox_mode": BoxMode.XYXY_ABS,
@@ -89,7 +89,7 @@ class Train_KITTI_Dataloader():
                 objs.append(obj)
             record["annotations"] = objs
         dataset_dicts.append(record)
-    return dataset_dicts
+	return dataset_dicts
 
 class Test_KITTI_Dataloader():
     def __init__(self):
