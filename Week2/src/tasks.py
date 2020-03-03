@@ -20,16 +20,24 @@ if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
 
 
-def task2():
+def evaluate(cfg):
+    # Quantitative results: compute AP
+    trainer = DefaultTrainer(cfg)
+    evaluator = COCOEvaluator("MIT_split_test", cfg, False)
+    val_loader = build_detection_test_loader(cfg, "MIT_split_test")
+    inference_on_dataset(trainer.model, val_loader, evaluator)
+
+
+def inference_task(model_name, model_file):
     # TODO: Load dataset
     DL = dataloader()
     dataset = DL.load_data()
 
     # Load model and checkpoint
     cfg = get_cfg()
-    cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+    cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url()
     cfg.DATASETS.TEST = ("MIT_split_test")
     predictor = DefaultPredictor(cfg)
 
@@ -43,10 +51,5 @@ def task2():
             scale=0.8, 
             instance_mode=ColorMode.IMAGE_BW)
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        cv2.imwrite(os.path.join(SAVE_PATH, 'Task2_FasterRCNN_inf_'+str(i)+'.png'), v.get_image()[:, :, ::-1])
+        cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
-    # Quantitative results: compute AP
-    trainer = DefaultTrainer(cfg)
-    evaluator = COCOEvaluator("MIT_split_test", cfg, False)
-    val_loader = build_detection_test_loader(cfg, "MIT_split_test")
-    inference_on_dataset(trainer.model, val_loader, evaluator)
