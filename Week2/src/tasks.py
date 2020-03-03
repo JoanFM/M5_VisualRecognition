@@ -18,9 +18,6 @@ from .utils import MIT_DATA_DIR, CATEGORIES
 
 DATASET_PATH = '/home/grupo07/MIT_split'
 SAVE_PATH = './results'
-if not os.path.exists(SAVE_PATH):
-    os.makedirs(SAVE_PATH)
-
 
 def evaluate(cfg):
     # Quantitative results: compute AP
@@ -31,6 +28,9 @@ def evaluate(cfg):
 
 
 def inference_task(model_name, model_file):
+    path = os.path.join(SAVE_PATH, model_name)
+    if not os.path.exists(path):
+        os.makedirs(path)
     # Loading training and test examples
     dataloader = Inference_Dataloader(MIT_DATA_DIR)
     dataset = dataloader.load_data()
@@ -52,7 +52,7 @@ def inference_task(model_name, model_file):
             scale=0.8, 
             instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def train_task(model_name, model_file):
     #TODO: Finish the details (EVALUATION ETC)
