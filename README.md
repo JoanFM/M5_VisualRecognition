@@ -4,9 +4,9 @@
 - [ ] Week2: Try Detectron2
 
 ## Members:
-- Roger Casals[rogercasalsvilardell@gmail.com]
-- Joan Fontanals[jfontanalsmartinez@gmail.com]
-- Pau Domingo[pavdom72@gmail.com]
+- [Roger Casals](rogercasalsvilardell@gmail.com): rogercasalsvilardell@gmail.com
+- [Joan Fontanals](jfontanalsmartinez@gmail.com): jfontanalsmartinez@gmail.com
+- [Pau Domingo](pavdom72@gmail.com): pavdom72@gmail.com
 
 ## Instructions:
 Under the folders WeekX we have the work of each week.
