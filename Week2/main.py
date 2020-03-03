@@ -1,4 +1,4 @@
-from src.tasks import task_inference
+from src.tasks import inference_task
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
         - COCO-Detection/retinanet_R_50_FPN_3x.yaml
         - COCO-Detection/retinanet_R_101_FPN_3x.yaml
     """
-    task_inference("FasterRCNN", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+    inference_task("FasterRCNN", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
 
 if __name__ == '__main__':
     main()

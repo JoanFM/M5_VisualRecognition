@@ -48,7 +48,7 @@ def inference_task(model_name, model_file):
         outputs = predictor(img)
         v = Visualizer(
             img[:, :, ::-1],
-            metadata=metadata,
+            metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[i]),
             scale=0.8, 
             instance_mode=ColorMode.IMAGE_BW)
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
