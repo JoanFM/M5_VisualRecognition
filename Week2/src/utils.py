@@ -1,6 +1,9 @@
 from glob import glob
 import os
 import numpy
+import cv2
+
+from detectron2.structures import BoxMode
 
 
 CATEGORIES = {
@@ -88,7 +91,7 @@ class Train_KITTI_Dataloader():
                 }
                 objs.append(obj)
             record["annotations"] = objs
-        dataset_dicts.append(record)
+            dataset_dicts.append(record)
         return dataset_dicts
 
 class Test_KITTI_Dataloader():
@@ -105,5 +108,5 @@ class Test_KITTI_Dataloader():
             record["image_id"] = k
             record["height"] = height
             record["width"] = width
-        dataset_dicts.append(record)
+            dataset_dicts.append(record)
         return dataset_dicts
