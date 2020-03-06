@@ -12,7 +12,7 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
-from .utils import Inference_Dataloader, Train_KITTI_Dataloader, Test_KITTI_Dataloader
+from .utils import Inference_Dataloader, KITTI_Dataloader
 from .utils import MIT_DATA_DIR, CATEGORIES
 
 
