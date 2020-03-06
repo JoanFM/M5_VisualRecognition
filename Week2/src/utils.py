@@ -5,7 +5,6 @@ import cv2
 
 from detectron2.structures import BoxMode
 
-
 CATEGORIES = {
     'Car': 0,
     'Van': 1,
@@ -19,10 +18,8 @@ CATEGORIES = {
 }
 MIT_DATA_DIR = '/home/mcv/datasets/MIT_split/'
 KITTI_DATA_DIR = '/home/mcv/datasets/KITTI/'
-KITTI_FULL_TRAIN_IMG = KITTI_DATA_DIR+'data_object_image_2/training/image_2'
-KITTI_MINI_TRAIN_IMG = KITTI_DATA_DIR+'data_object_image_2/mini_train'
+KITTI_TRAIN_IMG = KITTI_DATA_DIR+'data_object_image_2/training/image_2'
 KITTI_TRAIN_LABEL = KITTI_DATA_DIR+'training/label_2'
-KITTI_TEST_IMG = KITTI_DATA_DIR+'data_object_image_2/testing/image_2'
 
 """
 Labels of KITTI -- Meaning
@@ -58,18 +55,29 @@ class Inference_Dataloader():
             'test': self.test_paths
         }
 
-class Train_KITTI_Dataloader():
-    def __init__(self, train_flag=0):
-        if train_flag is 0:
-            self.train_paths = sorted(glob(KITTI_FULL_TRAIN_IMG+os.sep+'*.png'))
-            self.label_paths = sorted(glob(KITTI_TRAIN_LABEL+os.sep+'*.txt'))
-        else:
-            self.train_paths = sorted(glob(KITTI_MINI_TRAIN_IMG+os.sep+'*.png'))
-            self.label_paths = sorted(glob(KITTI_TRAIN_LABEL+os.sep+'*.txt'))[:len(self.train_paths)]
+class KITTI_Dataloader():
+    def __init__(self, split_perc=0.8):
+        if not os.path.isdir(KITTI_TRAIN_IMG):
+            raise Exception('The image directory is not correct.')
+        if not os.path.isidr(KITTI_TRAIN_LABEL):
+            raise Exception('The labels directory is not correct.')
+        self.img_paths = np.array(sorted(glob(KITTI_TRAIN_IMG+os.sep+'*.png')))
+        self.label_paths = np.array(sorted(glob(KITTI_TRAIN_LABEL+os.sep+'*.txt')))
+        img_indices = np.arange(len(self.img_paths))
+        split_point = int(img_indices.shape[0]*split_perc)
+        self.train_indices = img_indices[:split_point]
+        self.test_indices = img_indices[split_point:]
     
-    def load_data(self):
+    def get_dicts(self, train_flag=False):
+        if train_flag is True:
+            data_paths = self.img_paths[self.train_indices]
+            label_paths = self.label_paths[self.train_indices]
+        else:
+            data_paths = self.img_paths[self.test_indices]
+            label_paths = self.label_paths[self.test_indices]
+
         dataset_dicts = []
-        for k, (img_path, label_path) in enumerate(zip(self.train_paths,self.label_paths)):
+        for k, (img_path, label_path) in enumerate(zip(data_paths,label_paths)):
             record = {}
             filename = os.path.join(img_path)
             height, width = cv2.imread(filename).shape[:2]
@@ -91,22 +99,5 @@ class Train_KITTI_Dataloader():
                 }
                 objs.append(obj)
             record["annotations"] = objs
-            dataset_dicts.append(record)
-        return dataset_dicts
-
-class Test_KITTI_Dataloader():
-    def __init__(self):
-        self.test_paths = sorted(glob(KITTI_TEST_IMG+os.sep+'*.png'))
-    
-    def load_data(self):
-        dataset_dicts = []
-        for k, img_path in enumerate(self.test_paths):
-            record = {}
-            filename = os.path.join(img_path)
-            height, width = cv2.imread(filename).shape[:2]
-            record["file_name"] = filename
-            record["image_id"] = k
-            record["height"] = height
-            record["width"] = width
             dataset_dicts.append(record)
         return dataset_dicts

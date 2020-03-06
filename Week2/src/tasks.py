@@ -18,6 +18,7 @@ from .utils import MIT_DATA_DIR, CATEGORIES
 
 DATASET_PATH = '/home/grupo07/MIT_split'
 SAVE_PATH = './results'
+NUM_IMGS = 5236
 
 def evaluate(cfg):
     # Quantitative results: compute AP
@@ -55,42 +56,49 @@ def inference_task(model_name, model_file):
         cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def train_task(model_name, model_file):
-    #TODO: Finish the details (EVALUATION ETC)
     path = os.path.join(SAVE_PATH, 'train_task', model_name)
     if not os.path.exists(path):
         os.makedirs(path)
     # Load Data
-    dataloader = Train_KITTI_Dataloader()
-    test_loader = Test_KITTI_Dataloader()
-    DatasetCatalog.register('KITTI_train', dataloader.load_data)
-    MetadataCatalog.get('KITTI_train').set(thing_classes=list(CATEGORIES.keys()))
-    mit_metadata = MetadataCatalog.get('KITTI_train')
+    print('Loading Data.')
+    dataloader = KITTI_Dataloader()
+    def kitti_train(): return dataloader.get_dicts(train_flag=True)
+    def kitti_test(): return dataloader.get_dicts(train_flag=False)
+    DatasetCatalog.register("KITTI_train", kitti_train)
+    MetadataCatalog.get("KITTI_train").set(thing_classes=[k for k,_ in CATEGORIES.items()])
+    DatasetCatalog.register("KITTI_test", kitti_test)
+    MetadataCatalog.get("KITTI_test").set(thing_classes=[k for k,_ in CATEGORIES.items()])
 
     # Load MODEL and configure train hyperparameters
+    print('Loading Model.')
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train',)
+    cfg.DATASETS.TEST = ('KITTI_test',)
+    cfg.DATALOADER.NUM_WORKERS = 4
     cfg.OUTPUT_DIR = SAVE_PATH
-    cfg.DATALOADER.NUM_WORKERS = 1
-    # cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
-    cfg.SOLVER.IMS_PER_BATCH = 2
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
+    cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.00025
-    cfg.SOLVER.MAX_ITER = 10 # 300
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
+    cfg.SOLVER.MAX_ITER = NUM_IMGS // cfg.DATALOADER.NUM_WORKERS + 1 
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 9
 
     # TRAIN!!
+    print('Training.......')
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     trainer = DefaultTrainer(cfg) 
     trainer.resume_or_load(resume=False)
     trainer.train()
+    print('Training Done.')
 
     # EVAL
+    print('Evaluating......')
+    cfg.TEST.KEYPOINT_OKS_SIGMAS
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, 'model_final.pth')
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
-    cfg.DATASETS.TEST = ('KITTI_test',)
     predictor = DefaultPredictor(cfg)
-    dataset_dicts = test_loader.load_data()
+    dataset_dicts = kitti_test()
     for d in random.sample(dataset_dicts, 3):    
         im = cv2.imread(d['file_name'])
         outputs = predictor(im)
@@ -100,7 +108,11 @@ def train_task(model_name, model_file):
                    instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
         cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
-
+    print('COCO EVALUATOR....')
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir="./output/")
+    trainer.test(cfg, trainer.model, evaluators=[evaluator])
+    """
     val_loader = build_detection_test_loader(cfg, 'KITTI_test')
     inference_on_dataset(trainer.model, val_loader, evaluator)
+    """
+    print('DONE!!')
