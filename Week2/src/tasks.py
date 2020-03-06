@@ -75,12 +75,12 @@ def train_task(model_name, model_file):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train',)
     cfg.DATASETS.TEST = ('KITTI_test',)
-    cfg.DATALOADER.NUM_WORKERS = 4
+    cfg.DATALOADER.NUM_WORKERS = 0
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.00025
-    cfg.SOLVER.MAX_ITER = NUM_IMGS // cfg.DATALOADER.NUM_WORKERS + 1 
+    cfg.SOLVER.MAX_ITER = NUM_IMGS // cfg.SOLVER.IMS_PER_BATCH + 1 
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 9
 
@@ -99,7 +99,7 @@ def train_task(model_name, model_file):
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     predictor = DefaultPredictor(cfg)
     dataset_dicts = kitti_test()
-    for d in random.sample(dataset_dicts, 3):    
+    for i,d in enumerate(random.sample(dataset_dicts, 5)):    
         im = cv2.imread(d['file_name'])
         outputs = predictor(im)
         v = Visualizer(im[:, :, ::-1],
@@ -107,7 +107,7 @@ def train_task(model_name, model_file):
                    scale=0.8, 
                    instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
-        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+        cv2.imwrite(os.path.join(path, 'Evaluation_' + model_name + '_trained_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
     print('COCO EVALUATOR....')
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir="./output/")
     trainer.test(cfg, trainer.model, evaluators=[evaluator])

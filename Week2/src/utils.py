@@ -1,6 +1,6 @@
 from glob import glob
 import os
-import numpy
+import numpy as np
 import cv2
 
 from detectron2.structures import BoxMode
@@ -59,7 +59,7 @@ class KITTI_Dataloader():
     def __init__(self, split_perc=0.8):
         if not os.path.isdir(KITTI_TRAIN_IMG):
             raise Exception('The image directory is not correct.')
-        if not os.path.isidr(KITTI_TRAIN_LABEL):
+        if not os.path.isdir(KITTI_TRAIN_LABEL):
             raise Exception('The labels directory is not correct.')
         self.img_paths = np.array(sorted(glob(KITTI_TRAIN_IMG+os.sep+'*.png')))
         self.label_paths = np.array(sorted(glob(KITTI_TRAIN_LABEL+os.sep+'*.txt')))
@@ -91,7 +91,7 @@ class KITTI_Dataloader():
             for line in lines:
                 columns = line.split(' ')
                 category = CATEGORIES[columns[0]]
-                bbox = [columns[4], columns[5], columns[6], columns[7]]
+                bbox = [float(columns[4]), float(columns[5]), float(columns[6]), float(columns[7])]
                 obj = {
                     "bbox": bbox,
                     "bbox_mode": BoxMode.XYXY_ABS,
