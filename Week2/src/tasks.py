@@ -17,7 +17,7 @@ from .utils import MIT_DATA_DIR, CATEGORIES
 
 
 DATASET_PATH = '/home/grupo07/MIT_split'
-SAVE_PATH = './results'
+SAVE_PATH = './resultsv2'
 NUM_IMGS = 5236
 
 def evaluate(cfg):
@@ -111,6 +111,24 @@ def train_task(model_name, model_file):
     print('COCO EVALUATOR....')
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir="./output/")
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
+
+    # Loading training and test examples
+    inference_dataloader = Inference_Dataloader(MIT_DATA_DIR)
+    inference_dataset = inference_dataloader.load_data()
+
+    # Qualitative results: visualize some prediction results on MIT_split dataset
+    for i, img_path in enumerate([i for i in inference_dataset['test'] if 'inside_city' in i][:20]):
+        img = cv2.imread(img_path)
+        outputs = predictor(img)
+        v = Visualizer(
+            img[:, :, ::-1],
+            metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]),
+
+            scale=0.8, 
+            instance_mode=ColorMode.IMAGE)
+        v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
+        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_trained_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+    
     """
     val_loader = build_detection_test_loader(cfg, 'KITTI_test')
     inference_on_dataset(trainer.model, val_loader, evaluator)
