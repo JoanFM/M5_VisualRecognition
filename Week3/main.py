@@ -1,4 +1,4 @@
-from src.tasks import KITTIMOTS_KITTIMOTS_inference_task
+from src.tasks import KITTIMOTS_inference_task
 
 
 def main():
