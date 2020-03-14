@@ -23,8 +23,10 @@ class ValidationLoss(HookBase):
     def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg.clone()
-        self.cfg.DATASETS.TRAIN = cfg.DATASETS.VAL
+        self.cfg.DATASETS.TRAIN = cfg.DATASETS.TEST
         self._loader = iter(build_detection_train_loader(self.cfg))
+        self.best_loss = float('inf')
+        self.weights = None
         
     def after_step(self):
         data = next(self._loader)
@@ -40,6 +42,9 @@ class ValidationLoss(HookBase):
             if comm.is_main_process():
                 self.trainer.storage.put_scalars(total_val_loss=losses_reduced, 
                                                  **loss_dict_reduced)
+                if losses_reduced < self.best_loss:
+                    self.best_loss = losses_reduced
+                    self.weights = copy.deepcopy(self.trainer.model.state_dict())
 
 class Inference_Dataloader():
     def __init__(self):
