@@ -3,6 +3,7 @@ from glob import glob
 import numpy as np
 import cv2
 import random
+import pickle
 
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor, DefaultTrainer
@@ -68,13 +69,18 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     predictor = DefaultPredictor(cfg)
 
-    print('Using Model to predict on input')
-    predictions = []
-    for i, input_test in enumerate(kitti_test()):
-        img_path = input_test['file_name']
-        img = cv2.imread(img_path)
-        prediction = predictor(img)
-        predictions.append(prediction)
+    predictions_path = os.path.join(SAVE_PATH, "predictions.pkl")
+    if (os.path.exists(predictions_path)):
+        predictions = pickle.load(open(predictions_path, "rb"))
+    else:
+        print('Using Model to predict on input')
+        predictions = []
+        for i, input_test in enumerate(kitti_test()):
+            img_path = input_test['file_name']
+            img = cv2.imread(img_path)
+            prediction = predictor(img)
+            predictions.append(prediction)
+        pickle.dump(predictions, open(predictions_path, "wb"))
 
     print('Predictions length ' + str(len(predictions)))
     print('Inputs length ' + str(len(kitti_test())))
