@@ -1,4 +1,5 @@
-from src.tasks import KITTIMOTS_inference_task
+from src.tasks import KITTIMOTS_inference_task, KITTIMOTS_evaluation_task
+from src.tasks import KITTIMOTS_training_and_evaluation_task
 
 
 def main():
@@ -14,8 +15,8 @@ def main():
         - COCO-Detection/retinanet_R_101_FPN_3x.yaml
     """
 
-    # -- TASK B --
-
+    # -- TASK B -- #
+    """
     KITTIMOTS_inference_task("FasterRCNN_X_101", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
     KITTIMOTS_inference_task("FasterRCNN_R_101", "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
     KITTIMOTS_inference_task("FasterRCNN_R_50_DC5", "COCO-Detection/faster_rcnn_R_50_DC5_3x.yaml")
@@ -23,9 +24,16 @@ def main():
     
     KITTIMOTS_inference_task("RetinaNET_R_50", "COCO-Detection/retinanet_R_50_FPN_3x.yaml")
     KITTIMOTS_inference_task("RetinaNET_R_101", "COCO-Detection/retinanet_R_101_FPN_3x.yaml")
+    """
 
-
-    # -- TASK C --
+    # -- TASK C -- #
+    KITTIMOTS_evaluation_task("FasterRCNN_X_101", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+    KITTIMOTS_evaluation_task("FasterRCNN_R_101", "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
+    KITTIMOTS_evaluation_task("FasterRCNN_R_50_DC5", "COCO-Detection/faster_rcnn_R_50_DC5_3x.yaml")
+    KITTIMOTS_evaluation_task("FasterRCNN_R_50_C4", "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml")
+    
+    KITTIMOTS_evaluation_task("RetinaNET_R_50", "COCO-Detection/retinanet_R_50_FPN_3x.yaml")
+    KITTIMOTS_evaluation_task("RetinaNET_R_101", "COCO-Detection/retinanet_R_101_FPN_3x.yaml")
 
     # train_task("FasterRCNN_R_101", "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
 
