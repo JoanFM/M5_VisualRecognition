@@ -11,8 +11,8 @@ from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from hooks import ValidationLoss
 
+from .utils import ValidationLoss
 from .utils import KITTIMOTS_Inference_Dataloader
 
 SAVE_PATH = './results_week_3'

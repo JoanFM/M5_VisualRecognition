@@ -3,6 +3,9 @@ import os
 import numpy as np
 import cv2
 
+from detectron2.engine import HookBase
+from detectron2.data import build_detection_train_loader
+import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from pycocotools import coco
 
@@ -15,6 +18,28 @@ KITTIMOTS_DATA_DIR = '/home/mcv/datasets/KITTI-MOTS/'
 KITTIMOTS_TRAIN_IMG = KITTIMOTS_DATA_DIR+'training/image_02'
 KITTIMOTS_TEST_IMG = KITTIMOTS_DATA_DIR+'testing/image_02'
 KITTIMOTS_TRAIN_LABEL = KITTIMOTS_DATA_DIR+'instances_txt'
+
+class ValidationLoss(HookBase):
+    def __init__(self, cfg):
+        super().__init__()
+        self.cfg = cfg.clone()
+        self.cfg.DATASETS.TRAIN = cfg.DATASETS.VAL
+        self._loader = iter(build_detection_train_loader(self.cfg))
+        
+    def after_step(self):
+        data = next(self._loader)
+        with torch.no_grad():
+            loss_dict = self.trainer.model(data)
+            
+            losses = sum(loss_dict.values())
+            assert torch.isfinite(losses).all(), loss_dict
+
+            loss_dict_reduced = {"val_" + k: v.item() for k, v in 
+                                 comm.reduce_dict(loss_dict).items()}
+            losses_reduced = sum(loss for loss in loss_dict_reduced.values())
+            if comm.is_main_process():
+                self.trainer.storage.put_scalars(total_val_loss=losses_reduced, 
+                                                 **loss_dict_reduced)
 
 class Inference_Dataloader():
     def __init__(self):
