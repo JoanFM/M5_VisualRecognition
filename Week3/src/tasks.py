@@ -13,7 +13,8 @@ from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
 from .utils import ValidationLoss
-from .utils import KITTIMOTS_Inference_Dataloader
+from .utils import KITTIMOTS_Dataloader, Inference_Dataloader
+from .utils import KITTI_CATEGORIES
 
 SAVE_PATH = './results_week_3'
 
@@ -57,9 +58,9 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     def kitti_train(): return dataloader.get_dicts(train_flag=True)
     def kitti_test(): return dataloader.get_dicts(train_flag=False)
     DatasetCatalog.register("KITTIMOTS_train", kitti_train)
-    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
     DatasetCatalog.register("KITTIMOTS_test", kitti_test)
-    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
 
     # Load MODEL and Configuration
     print('Loading Model.')
@@ -88,9 +89,9 @@ def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     def kittmots_train(): return dataloader.get_dicts(train_flag=True)
     def kittimots_test(): return dataloader.get_dicts(train_flag=False)
     DatasetCatalog.register("KITTIMOTS_train", kittmots_train)
-    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
     DatasetCatalog.register("KITTIMOTS_test", kittimots_test)
-    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
 
     # PARAMETERS
     print('Loading Model.')

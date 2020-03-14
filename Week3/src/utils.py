@@ -52,20 +52,20 @@ class Inference_Dataloader():
             'test': self.test_paths
         }
 
-class KITTI_Dataloader():
+class KITTIMOTS_Dataloader():
     def __init__(self, split_perc=0.8):
         if not os.path.isdir(KITTIMOTS_TRAIN_IMG):
             raise Exception('The image directory is not correct.')
         if not os.path.isdir(KITTIMOTS_TRAIN_LABEL):
             raise Exception('The masks directory is not correct.')
-        label_paths = sorted(glob(KITTI_TRAIN_LABEL+os.sep+'*.txt'))
-        self.label_indices = ['{0:04d}'.format(l) for l in range(len(label_paths))]
-        split_point = int(len(img_indices)*split_perc)
-        self.train_labels = self.label_indices[:split_point]
-        self.test_labels = self.label_indices[split_point:]
+        label_paths = sorted(glob(KITTIMOTS_TRAIN_LABEL+os.sep+'*.txt'))
+        label_indices = ['{0:04d}'.format(l) for l in range(len(label_paths))]
+        split_point = int(len(label_indices)*split_perc)
+        self.train_labels = label_indices[:split_point]
+        self.test_labels = label_indices[split_point:]
     
     def get_dicts(self, train_flag=False):
-        sequences = self.train_indices if train_flag is True else self.test_indices
+        sequences = self.train_labels if train_flag is True else self.test_labels
         dataset_dicts = []
         for seq in sequences:
             seq_dicts = []
@@ -77,6 +77,7 @@ class KITTI_Dataloader():
                 lines = [l.split(' ') for l in lines]
             for k in range(num_frames):
                 frame_lines = [l for l in lines if int(l[0]) == k]
+                print(frame_lines)
                 frame_annotations = []
                 h, w = int(frame_lines[0][3]), int(frame_lines[0][4])
                 for detection in frame_lines:
@@ -86,7 +87,7 @@ class KITTI_Dataloader():
                     }
                     bbox = coco.maskUtils.toBbox(rle)
                     annotation = {
-                        'category_id': int(detection[1])%1000 #detection[2]?
+                        'category_id': int(detection[1])%1000, #detection[2]?
                         'bbox_mode': BoxMode.XYXY_ABS,
                         'bbox':bbox
                     }
