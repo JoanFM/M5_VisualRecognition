@@ -11,7 +11,6 @@ from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from visualizer import plot_losses, show_results
 from hooks import ValidationLoss
 
 from .utils import KITTIMOTS_Inference_Dataloader
@@ -128,5 +127,16 @@ def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     print('Inference on trained model')
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
-    plot_losses(cfg)
-    show_results(cfg, kittimots_test(), predictor, samples=10)
+    dataloader = Inference_Dataloader()
+    dataset = dataloader.load_data()
+    print('Getting Qualitative Results...')
+    for i, img_path in enumerate(dataset['test'][:20]):
+        img = cv2.imread(img_path)
+        outputs = predictor(img)
+        v = Visualizer(
+            img[:, :, ::-1],
+            metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]),
+            scale=0.8, 
+            instance_mode=ColorMode.IMAGE)
+        v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
+        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_trained_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
