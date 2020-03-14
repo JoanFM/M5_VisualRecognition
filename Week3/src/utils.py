@@ -77,29 +77,29 @@ class KITTIMOTS_Dataloader():
                 lines = [l.split(' ') for l in lines]
             for k in range(num_frames):
                 frame_lines = [l for l in lines if int(l[0]) == k]
-                print(frame_lines)
-                frame_annotations = []
-                h, w = int(frame_lines[0][3]), int(frame_lines[0][4])
-                for detection in frame_lines:
-                    rle = {
-                        'counts': detection[-1].strip(),
-                        'size': [h, w]
+                if frame_lines:
+                    frame_annotations = []
+                    h, w = int(frame_lines[0][3]), int(frame_lines[0][4])
+                    for detection in frame_lines:
+                        rle = {
+                            'counts': detection[-1].strip(),
+                            'size': [h, w]
+                        }
+                        bbox = coco.maskUtils.toBbox(rle)
+                        annotation = {
+                            'category_id': int(detection[1])%1000, #detection[2]?
+                            'bbox_mode': BoxMode.XYXY_ABS,
+                            'bbox':bbox
+                        }
+                        frame_annotations.append(annotation)
+                    filename = '{0:06d}.png'.format(k)
+                    img_dict = {
+                        'file_name': os.path.join(KITTIMOTS_TRAIN_IMG,seq,filename),
+                        'image_id': k+(int(seq)*1e3),
+                        'height': h,
+                        'width': w,
+                        'annotations': frame_annotations
                     }
-                    bbox = coco.maskUtils.toBbox(rle)
-                    annotation = {
-                        'category_id': int(detection[1])%1000, #detection[2]?
-                        'bbox_mode': BoxMode.XYXY_ABS,
-                        'bbox':bbox
-                    }
-                    frame_annotations.append(annotation)
-                filename = '{0:06d}.png'.format(k)
-                img_dict = {
-                    'file_name': os.path.join(KITTIMOTS_TRAIN_IMG,seq,filename),
-                    'image_id': k+(int(seq)*1e3),
-                    'height': h,
-                    'width': w,
-                    'annotations': frame_annotations
-                }
-                seq_dicts.append(img_dict)
+                    seq_dicts.append(img_dict)
             dataset_dicts += seq_dicts
         return dataset_dicts
