@@ -66,10 +66,25 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
+    predictor = DefaultPredictor(cfg)
+
+    print('Using Model to predict on input')
+    predictions = []
+    for i, input_test in enumerate(kitti_test()):
+        img_path = input_test['file_name']
+        img = cv2.imread(img_path)
+        prediction = predictor(img)
+        predictions.append(prediction)
+
+    print('Predictions length ' + str(len(predictions)))
+    print('Inputs length ' + str(len(kitti_test())))
 
     # Evaluation
     print('Evaluating......')
     evaluator = COCOEvaluator('KITTIMOTS_test', cfg, False, output_dir="./output/")
+    evaluator.reset()
+    evaluator.process(kitti_test(), predictions)
+    evaluator.evaluate()
     
 def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     path = os.path.join(SAVE_PATH, 'train_task', model_name)
@@ -109,7 +124,7 @@ def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
     trainer.resume_or_load(resume=False)
     trainer.train()
-
+ 
     # EVALUATION
     print('Evaluating....')
     evaluator = COCOEvaluator("KITTIMOTS_test", cfg, False, output_dir="./output/")
