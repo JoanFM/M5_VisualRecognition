@@ -55,10 +55,7 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     # Load Data
     print('Loading Data.')
     dataloader = KITTIMOTS_Dataloader()
-    def kitti_train(): return dataloader.get_dicts(train_flag=True)
     def kitti_test(): return dataloader.get_dicts(train_flag=False)
-    DatasetCatalog.register("KITTIMOTS_train", kitti_train)
-    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
     DatasetCatalog.register("KITTIMOTS_test", kitti_test)
     MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
 
@@ -66,8 +63,6 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     print('Loading Model.')
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
-    cfg.DATASETS.TRAIN = ('KITTIMOTS_train',)
-    cfg.DATASETS.TEST = ('KITTIMOTS_test',)
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
