@@ -86,6 +86,7 @@ class KITTIMOTS_Dataloader():
                             'size': [h, w]
                         }
                         bbox = coco.maskUtils.toBbox(rle)
+                        bbox = [int(item) for item in bbox]
                         annotation = {
                             'category_id': int(detection[1])%1000, #detection[2]?
                             'bbox_mode': BoxMode.XYXY_ABS,

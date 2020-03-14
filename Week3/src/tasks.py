@@ -16,7 +16,7 @@ from .utils import ValidationLoss
 from .utils import KITTIMOTS_Dataloader, Inference_Dataloader
 from .utils import KITTI_CATEGORIES
 
-SAVE_PATH = './results_week_3'
+SAVE_PATH = './results_week_3_task_C'
 
 def KITTIMOTS_inference_task(model_name, model_file):
     path = os.path.join(SAVE_PATH, model_name)
@@ -68,16 +68,13 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTIMOTS_train',)
     cfg.DATASETS.TEST = ('KITTIMOTS_test',)
-    cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
-    trainer = DefaultTrainer(cfg) 
-    trainer.resume_or_load(resume=False)
 
     # Evaluation
     print('Evaluating......')
     evaluator = COCOEvaluator('KITTIMOTS_test', cfg, False, output_dir="./output/")
-    trainer.test(cfg, trainer.model, evaluators=[evaluator])
     
 def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     path = os.path.join(SAVE_PATH, 'train_task', model_name)
