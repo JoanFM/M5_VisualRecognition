@@ -2,7 +2,7 @@ from glob import glob
 import os
 import numpy as np
 import cv2
-
+import matplotlib.pyplot as plt
 from detectron2.engine import HookBase
 from detectron2.data import build_detection_train_loader
 import detectron2.utils.comm as comm
@@ -121,3 +121,15 @@ class KITTIMOTS_Dataloader():
                     seq_dicts.append(img_dict)
             dataset_dicts += seq_dicts
         return dataset_dicts
+
+def plot_validation_loss(cfg):
+    val_loss = []
+    train_loss = []
+    for line in open(os.path.join(cfg.OUTPUT_DIR, "metrics.json"), "r"):
+        val_loss.append(json.loads(line)["total_val_loss"])
+        train_loss.append(json.loads(line)["total_loss"])
+
+    plt.plot(val_loss, label="Validation Loss")
+    plt.plot(train_loss, label="Training Loss")
+    plt.legend()
+    plt.savefig(os.path.join(cfg.OUTPUT_DIR,'validation_loss.png')

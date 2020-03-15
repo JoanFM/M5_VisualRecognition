@@ -13,7 +13,7 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data import MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
-from .utils import ValidationLoss
+from .utils import ValidationLoss, plot_validation_loss
 from .utils import KITTIMOTS_Dataloader, Inference_Dataloader
 from .utils import KITTI_CATEGORIES
 
@@ -139,6 +139,7 @@ def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     evaluator = COCOEvaluator("KITTIMOTS_test", cfg, False, output_dir="./output/")
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
+    plot_validation_loss(cfg)
     
     # Qualitative results
     print('Inference on trained model')
