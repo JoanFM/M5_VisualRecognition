@@ -98,7 +98,9 @@ class KITTIMOTS_Dataloader():
                             'counts': detection[-1].strip(),
                             'size': [h, w]
                         }
-                        bbox = coco.maskUtils.toBbox(rle)
+                        bbox = coco.maskUtils.toBbox(rle).tolist()
+                        bbox[2] += bbox[0]
+                        bbox[3] += bbox[1]
                         bbox = [int(item) for item in bbox]
                         category_id = int(detection[1][0])
                         annotation = {
