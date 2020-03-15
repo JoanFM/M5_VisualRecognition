@@ -58,7 +58,7 @@ def KITTIMOTS_evaluation_task(model_name, model_file):
     dataloader = KITTIMOTS_Dataloader()
     def kitti_test(): return dataloader.get_dicts(train_flag=False)
     DatasetCatalog.register("KITTIMOTS_test", kitti_test)
-    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[v for _,v in KITTI_CATEGORIES.items()])
 
     # Load MODEL and Configuration
     print('Loading Model.')
@@ -99,12 +99,15 @@ def KITTIMOTS_training_and_evaluation_task(model_name,model_file):
     # Load Data
     print('Loading Data.')
     dataloader = KITTIMOTS_Dataloader()
-    def kittmots_train(): return dataloader.get_dicts(train_flag=True)
+    def kittimots_train(): return dataloader.get_dicts(train_flag=True)
     def kittimots_test(): return dataloader.get_dicts(train_flag=False)
-    DatasetCatalog.register("KITTIMOTS_train", kittmots_train)
-    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
+    DatasetCatalog.register("KITTIMOTS_train", kittimots_train)
+    MetadataCatalog.get("KITTIMOTS_train").set(thing_classes=[v for _,v in KITTI_CATEGORIES.items()])
     DatasetCatalog.register("KITTIMOTS_test", kittimots_test)
-    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[k for k,_ in KITTI_CATEGORIES.items()])
+    MetadataCatalog.get("KITTIMOTS_test").set(thing_classes=[v for _,v in KITTI_CATEGORIES.items()])
+
+    NUM_IMGS = len(kittimots_train())
+    print(NUM_IMGS)
 
     # PARAMETERS
     print('Loading Model.')

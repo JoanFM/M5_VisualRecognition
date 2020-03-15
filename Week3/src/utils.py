@@ -11,7 +11,7 @@ from pycocotools import coco
 
 KITTI_CATEGORIES = {
     'Car': 10,
-    'Pedestrian': 2,
+    'Pedestrian': 1,
 }
 
 KITTIMOTS_DATA_DIR = '/home/mcv/datasets/KITTI-MOTS/'
@@ -68,6 +68,9 @@ class KITTIMOTS_Dataloader():
         split_point = int(len(label_indices)*split_perc)
         self.train_labels = label_indices[:split_point]
         self.test_labels = label_indices[split_point:]
+        print('self.train_labels: {0}'.format(self.train_labels))
+        print('self.test_labels: {0}'.format(self.test_labels))
+        input('...')
     
     def get_dicts(self, train_flag=False):
         sequences = self.train_labels if train_flag is True else self.test_labels
