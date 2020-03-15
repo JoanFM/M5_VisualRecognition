@@ -10,8 +10,12 @@ from detectron2.structures import BoxMode
 from pycocotools import coco
 
 KITTI_CATEGORIES = {
-    'Car': 10,
+    'Car': 0,
     'Pedestrian': 1,
+}
+COCO_CATTEGORIES = {
+    0: 2,
+    1: 0
 }
 
 KITTIMOTS_DATA_DIR = '/home/mcv/datasets/KITTI-MOTS/'
@@ -95,8 +99,9 @@ class KITTIMOTS_Dataloader():
                         }
                         bbox = coco.maskUtils.toBbox(rle)
                         bbox = [int(item) for item in bbox]
+                        category_id = int(detection[1])//1000
                         annotation = {
-                            'category_id': int(detection[1])//1000, #detection[2]?
+                            'category_id': COCO_CATTEGORIES[category_id] #detection[2]?
                             'bbox_mode': BoxMode.XYXY_ABS,
                             'bbox':bbox
                         }
