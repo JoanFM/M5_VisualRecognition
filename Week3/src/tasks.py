@@ -17,7 +17,7 @@ from .utils import ValidationLoss, plot_validation_loss
 from .utils import KITTIMOTS_Dataloader, Inference_Dataloader
 from .utils import KITTI_CATEGORIES
 
-SAVE_PATH = './results_week_3_task_C'
+SAVE_PATH = './results_week_3_task_E'
 
 def KITTIMOTS_inference_task(model_name, model_file):
     path = os.path.join(SAVE_PATH, model_name)

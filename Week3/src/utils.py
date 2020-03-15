@@ -132,4 +132,4 @@ def plot_validation_loss(cfg):
     plt.plot(val_loss, label="Validation Loss")
     plt.plot(train_loss, label="Training Loss")
     plt.legend()
-    plt.savefig(os.path.join(cfg.OUTPUT_DIR,'validation_loss.png')
+    plt.savefig(os.path.join(cfg.OUTPUT_DIR,'validation_loss.png'))
