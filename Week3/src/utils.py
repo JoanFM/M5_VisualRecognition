@@ -9,6 +9,7 @@ import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from pycocotools import coco
 import torch
+import copy
 
 KITTI_CATEGORIES = {
     'Car': 1,
