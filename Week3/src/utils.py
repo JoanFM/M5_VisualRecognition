@@ -101,7 +101,7 @@ class KITTIMOTS_Dataloader():
                         bbox = [int(item) for item in bbox]
                         category_id = int(detection[1])//1000
                         annotation = {
-                            'category_id': COCO_CATTEGORIES[category_id] #detection[2]?
+                            'category_id': COCO_CATTEGORIES[category_id], #detection[2]?
                             'bbox_mode': BoxMode.XYXY_ABS,
                             'bbox':bbox
                         }
