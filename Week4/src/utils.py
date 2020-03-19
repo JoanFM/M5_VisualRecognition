@@ -59,17 +59,13 @@ class KITTIMOTS_Dataloader():
             with open(label_path,'r') as file:
                 lines = file.readlines()
                 lines = [l.split(' ') for l in lines]
-                lines = np.array(lines)
-            #for frame in range(lines):
-            for frame in np.unique(lines[:, 0].astype('uint8')):
-                frame_lines = [l for l in lines if int(l[0]) == frame]
+            for k in range(num_frames):
+                frame_lines = [l for l in lines if int(l[0]) == k]
                 if frame_lines:
                     frame_annotations = []
                     h, w = int(frame_lines[0][3]), int(frame_lines[0][4])
                     for detection in frame_lines:
                         rle = detection[-1].strip()
-                        print(rle)
-                        rle_coco = coco.maskUtils.decode(rle)
                         segm = {
                             'counts': rle,
                             'size': [h, w]
@@ -103,11 +99,11 @@ class KITTIMOTS_Dataloader():
                         'file_name': img_path,
                         'sem_seg_file_name': mask_path,
                         'sem_seg': segmentation,
-                        'image_id': frame+(int(seq)*1e3),
+                        'image_id': k+(int(seq)*1e3),
                         'height': h,
                         'width': w,
                         'annotations': frame_annotations
                     }
                     seq_dicts.append(img_dict)
             dataset_dicts += seq_dicts
-        return dataset_dicts[:2]
+        return dataset_dicts
