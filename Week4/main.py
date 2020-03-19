@@ -1,6 +1,5 @@
 from src.tasks import task_a
 
-
 def main():
     """ 
     MASK RCNN Configurations:
@@ -12,7 +11,6 @@ def main():
         - COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml
     """
 
-    print('RUNNING ALREADY!!')
     # -- TASK A -- #
     task_a("MaskRCNN_R_50_C4", "COCO-InstanceSegmentation/mask_rcnn_R_50_C4_3x.yaml")
     # task_a("MaskRCNN_R_50_DC5", "COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_3x.yaml")

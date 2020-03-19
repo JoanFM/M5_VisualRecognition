@@ -38,19 +38,14 @@ def task_a(model_name, model_file):
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     predictor = DefaultPredictor(cfg)
 
-    predictions_path = os.path.join(SAVE_PATH, 'predictions.pkl')
-    if os.path.exists(predictions_path):
-        print('Loading old predictions')
-        predictions = pickle.load(open(predictions_path, 'rb'))
-    else:
-        print('Using Model to predict on input')
-        predictions = []
-        for i, input in enumerate(kitti_val()):
-            img_path = input['file_name']
-            img = cv2.imread(img_path)
-            prediction = predictor(img)
-            predictions.append(prediction)
-        pickle.dump(predictions, open(predictions_path, 'wb'))
+    predictions = []
+    print('Using Model to predict on input')
+    for i, input in enumerate(kitti_val()):
+        print('\tInference item '+str(i), end='\r')
+        img_path = input['file_name']
+        img = cv2.imread(img_path)
+        prediction = predictor(img)
+        predictions.append(prediction)
 
     print('Predictions length ' + str(len(predictions)))
     print('Inputs length ' + str(len(kitti_val())))
