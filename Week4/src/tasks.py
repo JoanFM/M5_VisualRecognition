@@ -16,7 +16,9 @@ from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from .utils import KITTIMOTS_Dataloader
 from .utils import KITTI_CATEGORIES
 
+
 SAVE_PATH = './results'
+
 
 def task_a(model_name, model_file):
     path = os.path.join(SAVE_PATH+'_task_a', model_name)
@@ -40,15 +42,14 @@ def task_a(model_name, model_file):
 
     predictions = []
     print('Using Model to predict on input')
-    for i, img_dict in enumerate(kitti_val()):
+    for i, input in enumerate(kitti_val()):
         print('\tInference item '+str(i), end='\r')
-        img_path = img_dict['file_name']
-        img = cv2.imread(img_path)
+        img = cv2.imread(input['file_name'])
         prediction = predictor(img)
         predictions.append(prediction)
 
-    print('Predictions length ' + str(len(predictions)))
-    print('Inputs length ' + str(len(kitti_val())))
+    print('Predictions length', len(predictions))
+    print('Inputs length', len(kitti_val()))
 
     # Evaluation
     print('Evaluating')
