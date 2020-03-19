@@ -40,9 +40,9 @@ def task_a(model_name, model_file):
 
     predictions = []
     print('Using Model to predict on input')
-    for i, input in enumerate(kitti_val()):
+    for i, img_dict in enumerate(kitti_val()):
         print('\tInference item '+str(i), end='\r')
-        img_path = input['file_name']
+        img_path = img_dict['file_name']
         img = cv2.imread(img_path)
         prediction = predictor(img)
         predictions.append(prediction)

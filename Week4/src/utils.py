@@ -21,12 +21,16 @@ KITTIMOTS_TRAIN_MASK = KITTIMOTS_DATA_DIR+'instances'
 KITTI_CATEGORIES = {
     'Car': 1,
     'Pedestrian': 2,
+    'Ignore': 10,
+    'Background': 0
 }
+"""
 COCO_CATTEGORIES = {
     1: 2,
     2: 0,
     10: None,
 }
+"""
 
 class KITTIMOTS_Dataloader():
     def __init__(self):
@@ -61,34 +65,43 @@ class KITTIMOTS_Dataloader():
                     frame_annotations = []
                     h, w = int(frame_lines[0][3]), int(frame_lines[0][4])
                     for detection in frame_lines:
-                        rle = {
-                            'counts': detection[-1].strip(),
+                        rle = detection[-1].strip().encode(encoding='UTF-8')
+                        print(rle)
+                        segm = {
+                            'counts': rle,
                             'size': [h, w]
                         }
-                        bbox = coco.maskUtils.toBbox(rle).tolist()
+                        bbox = coco.maskUtils.toBbox(segm).tolist()
+                        print(bbox)
                         bbox[2] += bbox[0]
                         bbox[3] += bbox[1]
-                        bbox = [int(item) for item in bbox]
+                        print(bbox)
+                        #bbox = [int(item) for item in bbox]
                         category_id = int(detection[2])
 
+                        """
                         mask = coco.maskUtils.decode(rle)
                         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                         seg = [list(c.flatten()) for c in contours]
+                        """
 
                         annotation = {
-                            'category_id': COCO_CATTEGORIES[category_id],
+                            'category_id': category_id,
                             'bbox_mode': BoxMode.XYXY_ABS,
                             'bbox': bbox,
-                            'segmentation': seg,
-                            'is_crowd': False
+                            'segmentation': rle,
+                            'is_crowd': 0 if category_id in [1,2,0] else 1
                         }
                         frame_annotations.append(annotation)
                     filename = '{0:06d}.png'.format(k)
                     img_path = os.path.join(KITTIMOTS_TRAIN_IMG,seq,filename)
                     mask_path = os.path.join(KITTIMOTS_TRAIN_MASK,seq,filename)
                     segmentation = torch.Tensor(np.array(Image.open(mask_path)))
+                    print(segmentation.size)
                     img_dict = {
                         'file_name': img_path,
+                        'sem_seg_file_name': mask_path,
+                        'sem_seg': segmentation
                         'image_id': k+(int(seq)*1e3),
                         'height': h,
                         'width': w,
@@ -96,4 +109,4 @@ class KITTIMOTS_Dataloader():
                     }
                     seq_dicts.append(img_dict)
             dataset_dicts += seq_dicts
-        return dataset_dicts[:100]
+        return dataset_dicts
