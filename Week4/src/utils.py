@@ -14,14 +14,12 @@ KITTIMOTS_TRAIN_LABEL = KITTIMOTS_DATA_DIR+'instances_txt'
 KITTIMOTS_TRAIN_MASK = KITTIMOTS_DATA_DIR+'instances'
 KITTI_CATEGORIES = {
     'Car': 1,
-    'Pedestrian': 2,
-    'Ignore': 10,
-    'Background': 0
+    'Dummy': 0, # We need 3 classes to not get NANs when evaluating, for some reason, duh
+    'Pedestrian': 2
 }
-COCO_CATTEGORIES = {
+COCO_CATEGORIES = {
     1: 2,
-    2: 0,
-    10: None,
+    2: 0
 }
 
 
@@ -76,6 +74,9 @@ class KITTIMOTS_Dataloader():
     def get_frame_annotations(self, frame_lines, h, w):
         frame_annotations = []
         for detection in frame_lines:
+            category_id = int(detection[2])
+            if category_id not in KITTI_CATEGORIES.values():
+                continue
 
             rle = {
                 'counts': detection[-1].strip(),
@@ -85,7 +86,6 @@ class KITTIMOTS_Dataloader():
             bbox[2] += bbox[0]
             bbox[3] += bbox[1]
             bbox = [int(item) for item in bbox]
-            category_id = int(detection[2])
 
             mask = coco.maskUtils.decode(rle)
             contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -95,11 +95,10 @@ class KITTIMOTS_Dataloader():
                 continue
 
             annotation = {
-                'category_id': COCO_CATTEGORIES[category_id],
+                'category_id': COCO_CATEGORIES[category_id],
                 'bbox_mode': BoxMode.XYXY_ABS,
                 'bbox': bbox,
-                'segmentation': seg,
-                'is_crowd': 0 if category_id in [1, 2, 0] else 1
+                'segmentation': seg
             }
             frame_annotations.append(annotation)
 
