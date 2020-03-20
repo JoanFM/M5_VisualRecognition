@@ -103,7 +103,7 @@ def task_b(model_name, model_file):
     cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.MAX_ITER = 1000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
 
     # Training
     print('Training')
@@ -119,7 +119,10 @@ def task_b(model_name, model_file):
     evaluator = COCOEvaluator('KITTIMOTS_val', cfg, False, output_dir='./output')
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
-    plot_validation_loss(cfg)
+    print('Plotting losses')
+    plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, model_name, path)
+    print('Reseting metrics')
+    os.remove(os.path.join(cfg.OUTPUT_DIR, "metrics.json"))
 
     # Qualitative results: visualize some results
     print('Getting qualitative results')

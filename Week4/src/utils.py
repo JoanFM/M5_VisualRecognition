@@ -153,14 +153,20 @@ class ValidationLoss(HookBase):
                     self.weights = copy.deepcopy(self.trainer.model.state_dict())
 
 
-def plot_validation_loss(cfg):
+def plot_validation_loss(cfg, iterations, model_name, savepath):
     val_loss = []
     train_loss = []
     for line in open(os.path.join(cfg.OUTPUT_DIR, "metrics.json"), "r"):
-        val_loss.append(json.loads(line)["total_val_loss"])
-        train_loss.append(json.loads(line)["total_loss"])
-
-    plt.plot(val_loss, label="Validation Loss")
-    plt.plot(train_loss, label="Training Loss")
+        result = json.loads(line)
+        if ('total_val_loss' in result.keys()) and ('total_loss' in result.keys()):
+            val_loss.append(result["total_val_loss"])
+            train_loss.append(result["total_loss"])
+    plt.figure(figsize=(10,10))
+    plt.plot(list(range(0,iterations-1,20)),val_loss, label="Validation Loss")
+    plt.plot(list(range(0,iterations-1,20)),train_loss, label="Training Loss")
+    plt.title('Validation Loss for model '+'{0}'.format(model_name))
+    plt.xlabel('Iterations')
+    plt.ylabel('Validation_Loss')
+    plt.grid('True')
     plt.legend()
-    plt.savefig(os.path.join(cfg.OUTPUT_DIR,'validation_loss.png'))
+    plt.savefig(os.path.join(savepath,'validation_loss.png'))
