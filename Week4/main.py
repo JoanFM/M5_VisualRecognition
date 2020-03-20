@@ -1,5 +1,6 @@
 from src.tasks import task_a
 
+
 def main():
     """ 
     MASK RCNN Configurations:
