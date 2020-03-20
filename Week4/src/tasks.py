@@ -124,7 +124,9 @@ def task_b(model_name, model_file):
     # Qualitative results: visualize some results
     print('Getting qualitative results')
     predictor = DefaultPredictor(cfg)
-    for i, input in enumerate(kitti_val()[:20]):
+    inputs = kitti_val()
+    inputs = inputs[:20] + inputs[-20:]
+    for i, input in enumerate(inputs):
         img = cv2.imread(input['file_name'])
         outputs = predictor(img)
         v = Visualizer(
