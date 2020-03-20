@@ -20,7 +20,7 @@ from .utils import ValidationLoss, plot_validation_loss
 SAVE_PATH = './results'
 
 
-def task_a(model_name, model_file):
+def task_a(model_name, model_file, evaluate=True, visualize=True):
     print('Running task A for model', model_name)
 
     path = os.path.join(SAVE_PATH+'_week_4_task_a', model_name)
@@ -46,28 +46,33 @@ def task_a(model_name, model_file):
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
-    model = build_model(cfg)
-    DetectionCheckpointer(model).load(cfg.MODEL.WEIGHTS)
 
-    # Evaluation
-    print('Evaluating')
-    evaluator = COCOEvaluator('KITTIMOTS_val', cfg, False, output_dir='./output')
-    trainer = DefaultTrainer(cfg)
-    trainer.test(cfg, model, evaluators=[evaluator])
+    if evaluate:
+        model = build_model(cfg)
+        DetectionCheckpointer(model).load(cfg.MODEL.WEIGHTS)
 
-    # Qualitative results: visualize some results
-    print('Getting qualitative results')
-    predictor = DefaultPredictor(cfg)
-    for i, input in enumerate(kitti_val()[:20]):
-        img = cv2.imread(input['file_name'])
-        outputs = predictor(img)
-        v = Visualizer(
-            img[:, :, ::-1],
-            metadata=model_training_metadata,
-            scale=0.8,
-            instance_mode=ColorMode.IMAGE)
-        v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
-        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+        # Evaluation
+        print('Evaluating')
+        evaluator = COCOEvaluator('KITTIMOTS_val', cfg, False, output_dir='./output')
+        trainer = DefaultTrainer(cfg)
+        trainer.test(cfg, model, evaluators=[evaluator])
+
+    if visualize:
+        # Qualitative results: visualize some results
+        print('Getting qualitative results')
+        predictor = DefaultPredictor(cfg)
+        inputs = kitti_val()
+        inputs = inputs[:20] + inputs[-20:]
+        for i, input in enumerate(inputs):
+            img = cv2.imread(input['file_name'])
+            outputs = predictor(img)
+            v = Visualizer(
+                img[:, :, ::-1],
+                metadata=model_training_metadata,
+                scale=0.8,
+                instance_mode=ColorMode.IMAGE)
+            v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
+            cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def task_b(model_name, model_file):
     print('Running task B for model', model_name)
