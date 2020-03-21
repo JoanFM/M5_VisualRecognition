@@ -17,14 +17,11 @@ from .utils import KITTI_CATEGORIES
 from .utils import ValidationLoss, plot_validation_loss
 
 
-SAVE_PATH = './results'
-
-
 def task_a(model_name, model_file, evaluate=True, visualize=True):
     print('Running task A for model', model_name)
 
-    path = os.path.join(SAVE_PATH+'_week_4_task_a', model_name)
-    os.makedirs(path, exist_ok=True)
+    SAVE_PATH = os.path.join('./results_week_4_task_a', model_name)
+    os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
     print('Loading data')
@@ -72,13 +69,13 @@ def task_a(model_name, model_file, evaluate=True, visualize=True):
                 scale=0.8,
                 instance_mode=ColorMode.IMAGE)
             v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
-            cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+            cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def task_b(model_name, model_file):
     print('Running task B for model', model_name)
 
-    path = os.path.join(SAVE_PATH+'_week_4_task_b', model_name)
-    os.makedirs(path, exist_ok=True)
+    SAVE_PATH = os.path.join('./results_week_4_task_b', model_name)
+    os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
     print('Loading data')
@@ -97,6 +94,7 @@ def task_b(model_name, model_file):
     cfg.DATASETS.TRAIN = ('KITTIMOTS_train',)
     cfg.DATASETS.TEST = ('KITTIMOTS_val',)
     cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
@@ -104,6 +102,7 @@ def task_b(model_name, model_file):
     cfg.SOLVER.MAX_ITER = 1000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
+    cfg.TEST.SCORE_THRESH = 0.5
 
     # Training
     print('Training')
@@ -120,9 +119,7 @@ def task_b(model_name, model_file):
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
     print('Plotting losses')
-    plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, model_name, path)
-    print('Reseting metrics')
-    os.remove(os.path.join(cfg.OUTPUT_DIR, "metrics.json"))
+    plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, model_name, SAVE_PATH)
 
     # Qualitative results: visualize some results
     print('Getting qualitative results')
@@ -138,4 +135,4 @@ def task_b(model_name, model_file):
             scale=0.8,
             instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
-        cv2.imwrite(os.path.join(path, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+        cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])

@@ -161,9 +161,11 @@ def plot_validation_loss(cfg, iterations, model_name, savepath):
         if ('total_val_loss' in result.keys()) and ('total_loss' in result.keys()):
             val_loss.append(result["total_val_loss"])
             train_loss.append(result["total_loss"])
+    val_idx = [int(item) for item in list(np.linspace(0,iterations,len(val_loss)))]
+    train_idx = [int(item) for item in list(np.linspace(0,iterations,len(train_loss)))]
     plt.figure(figsize=(10,10))
-    plt.plot(list(range(0,iterations-1,20)),val_loss, label="Validation Loss")
-    plt.plot(list(range(0,iterations-1,20)),train_loss, label="Training Loss")
+    plt.plot(val_idx,val_loss, label="Validation Loss")
+    plt.plot(train_idx,train_loss, label="Training Loss")
     plt.title('Validation Loss for model '+'{0}'.format(model_name))
     plt.xlabel('Iterations')
     plt.ylabel('Validation_Loss')
