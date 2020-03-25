@@ -77,8 +77,8 @@ def task_b(model_name, model_file, checkpoint=None):
 
     # Loading data
     print('Loading data')
-    motsloader = MOTS_Dataloader('motschallenge')
-    kittiloader = MOTS_Dataloader('kittimots')
+    motsloader = MOTS_Dataloader(dataset='motschallenge')
+    kittiloader = MOTS_Dataloader(dataset='kittimots')
     def mots_train(): return motsloader.get_dicts(train_flag=True)
     def kitti_val(): return kittiloader.get_dicts(train_flag=False)
     DatasetCatalog.register('MOTS_train', mots_train)

@@ -14,8 +14,8 @@ import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 
 
-MOTSCHALLENGE_DATA_DIR = '/home/mcv/datasets/MOTSChallenge/'
-MOTSCHALLENGE_TRAIN_IMG = MOTSCHALLENGE_DATA_DIR+'train/images'
+MOTSCHALLENGE_DATA_DIR = '/home/mcv/datasets/MOTSChallenge/train/'
+MOTSCHALLENGE_TRAIN_IMG = MOTSCHALLENGE_DATA_DIR+'images'
 MOTSCHALLENGE_TRAIN_LABEL = MOTSCHALLENGE_DATA_DIR+'instances_txt'
 MOTSCHALLENGE_TRAIN_MASK = MOTSCHALLENGE_DATA_DIR+'instances'
 
