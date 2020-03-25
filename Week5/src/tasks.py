@@ -68,20 +68,21 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
             v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
             cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
-def task_b(model_name, model_file):
-    model_name = model_name + '_inference'
+def task_b(model_name, model_file, checkpoint=None):
+    model_name = model_name
     print('Running task B for model', model_name)
 
-    SAVE_PATH = os.path.join('./results_week_4_task_b', model_name)
+    SAVE_PATH = os.path.join('./results_week_5_task_b', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
     print('Loading data')
-    dataloader = KITTIMOTS_Dataloader()
-    def kitti_train(): return dataloader.get_dicts(train_flag=True)
-    def kitti_val(): return dataloader.get_dicts(train_flag=False)
-    DatasetCatalog.register('KITTIMOTS_train', kitti_train)
-    MetadataCatalog.get('KITTIMOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    motsloader = MOTS_Dataloader('motschallenge')
+    kittiloader = MOTS_Dataloader('kittimots')
+    def mots_train(): return motsloader.get_dicts(train_flag=True)
+    def kitti_val(): return kittiloader.get_dicts(train_flag=False)
+    DatasetCatalog.register('MOTS_train', mots_train)
+    MetadataCatalog.get('MOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     DatasetCatalog.register('KITTIMOTS_val', kitti_val)
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
@@ -89,15 +90,18 @@ def task_b(model_name, model_file):
     print('Loading Model')
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
-    cfg.DATASETS.TRAIN = ('KITTIMOTS_train',)
+    cfg.DATASETS.TRAIN = ('MOTS_train',)
     cfg.DATASETS.TEST = ('KITTIMOTS_val',)
     cfg.DATALOADER.NUM_WORKERS = 0
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
+    if checkpoint:
+        cfg.MODEL.WEIGHTS = checkpoint
+    else:
+        cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.00025
-    cfg.SOLVER.MAX_ITER = 8000
+    cfg.SOLVER.MAX_ITER = 4000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     cfg.TEST.SCORE_THRESH = 0.5
