@@ -17,8 +17,12 @@ from .utils import KITTI_CATEGORIES
 from .utils import ValidationLoss, plot_validation_loss
 
 def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=True):
-    print('Running task A for model', model_name)
-    SAVE_PATH = os.path.join('./results_week_5_task_a', model_name)
+    if checkpoint:
+        print('Running task A for model', model_name)
+        SAVE_PATH = os.path.join('./results_week_5_task_a', model_name+'_wCheckpoint')
+    else:
+        print('Running task A for model', model_name)
+        SAVE_PATH = os.path.join('./results_week_5_task_a', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
@@ -52,7 +56,7 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
 
         # Evaluation
         print('Evaluating')
-        evaluator = COCOEvaluator('MOTS_val', cfg, False, output_dir='./output')
+        evaluator = COCOEvaluator('MOTS_val', cfg, False, output_dir=SAVE_PATH)
         trainer = DefaultTrainer(cfg)
         trainer.test(cfg, model, evaluators=[evaluator])
 
@@ -122,7 +126,7 @@ def task_b(model_name, model_file, checkpoint=None):
 
     # Evaluation
     print('Evaluating')
-    evaluator = COCOEvaluator('KITTIMOTS_val', cfg, False, output_dir='./output')
+    evaluator = COCOEvaluator('KITTIMOTS_val', cfg, False, output_dir=SAVE_PATH)
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
     print('Plotting losses')

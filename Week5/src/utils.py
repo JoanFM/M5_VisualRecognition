@@ -31,8 +31,8 @@ KITTI_CATEGORIES = {
     'Pedestrian': 2
 }
 COCO_CATEGORIES = {
-    1: 2,
-    2: 0
+    1: 0,
+    2: 2
 }
 
 class MOTS_Dataloader():
