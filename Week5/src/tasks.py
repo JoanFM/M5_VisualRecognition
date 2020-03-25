@@ -31,9 +31,9 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
     def mots_train(): return dataloader.get_dicts(train_flag=True)
     def mots_val(): return dataloader.get_dicts(train_flag=False)
     DatasetCatalog.register('MOTS_train', mots_train)
-    MetadataCatalog.get('MOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    MetadataCatalog.get('MOTS_train').set(thing_classes=list(MOTS_CATEGORIES.keys()))
     DatasetCatalog.register('MOTS_val', mots_val)
-    MetadataCatalog.get('MOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    MetadataCatalog.get('MOTS_val').set(thing_classes=list(MOTS_CATEGORIES.keys()))
 
     # Load model and configuration
     print('Loading Model')

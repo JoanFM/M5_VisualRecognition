@@ -30,6 +30,10 @@ KITTI_CATEGORIES = {
     'Dummy': 0, # We need 3 classes to not get NANs when evaluating, for some reason, duh
     'Pedestrian': 2
 }
+MOTS_CATEGORIES = {
+    'Pedestrian': 1,
+    'Dummy': 0
+}
 COCO_CATEGORIES = {
     1: 0,
     2: 2
