@@ -80,6 +80,8 @@ class MOTS_Dataloader():
 
     def get_seq_dicts(self, seq):
         image_paths = sorted(glob(os.path.join(self.train_img_dir, seq, '*.png')))
+        if not image_paths:
+            image_paths = sorted(glob(os.path.join(self.train_img_dir, seq, '*.jpg')))
         mask_paths = sorted(glob(os.path.join(self.train_mask_dir, seq, '*.png')))
 
         label_path = os.path.join(self.train_label_dir, seq+'.txt')
