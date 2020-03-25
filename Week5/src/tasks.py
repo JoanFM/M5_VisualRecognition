@@ -13,7 +13,7 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 from .utils import MOTS_Dataloader
-from .utils import KITTI_CATEGORIES
+from .utils import KITTI_CATEGORIES, MOTS_CATEGORIES
 from .utils import ValidationLoss, plot_validation_loss
 
 def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=True):
