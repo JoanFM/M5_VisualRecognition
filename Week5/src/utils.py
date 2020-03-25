@@ -81,7 +81,10 @@ class MOTS_Dataloader():
     def get_seq_dicts(self, seq):
         image_paths = sorted(glob(os.path.join(self.train_img_dir, seq, '*.png')))
         if not image_paths:
+            self.extension_flag = False
             image_paths = sorted(glob(os.path.join(self.train_img_dir, seq, '*.jpg')))
+        else:
+            self.extension_flag = True
         mask_paths = sorted(glob(os.path.join(self.train_mask_dir, seq, '*.png')))
 
         label_path = os.path.join(self.train_label_dir, seq+'.txt')
@@ -134,7 +137,10 @@ class MOTS_Dataloader():
         return frame_annotations
 
     def get_img_dict(self, seq, k, h, w, frame_annotations):
-        filename = '{0:06d}.png'.format(k)
+        if self.extension_flag:
+            filename = '{0:06d}.png'.format(k)
+        else:
+            filename = '{0:06d}.jpg'.format(k)
         img_path = os.path.join(self.train_img_dir,seq,filename)
         img_dict = {
             'file_name': img_path,
