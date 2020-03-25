@@ -31,7 +31,7 @@ KITTI_CATEGORIES = {
     'Pedestrian': 2
 }
 MOTS_CATEGORIES = {
-    'Pedestrian': 1,
+    'Pedestrian': 2,
     'Dummy': 0
 }
 COCO_CATEGORIES = {
