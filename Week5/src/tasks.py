@@ -25,7 +25,7 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
     print('Loading data')
     dataloader = MOTS_Dataloader(dataset='motschallenge')
     def mots_val(): return dataloader.get_dicts(train_flag=False)
-    DatasetCatalog.register('MOTS_val', kitti_val)
+    DatasetCatalog.register('MOTS_val', mots_val)
     MetadataCatalog.get('MOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
     # Load model and configuration
@@ -33,7 +33,7 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     model_training_metadata = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]) # Store current model training metadata
-    cfg.DATASETS.TEST = ('KITTIMOTS_val', )
+    cfg.DATASETS.TEST = ('MOTS_val', )
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     if checkpoint:

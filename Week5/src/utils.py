@@ -56,11 +56,12 @@ class MOTS_Dataloader():
             raise Exception('The masks directory is not correct')
 
         label_paths = sorted(glob(os.path.join(self.train_label_dir, '*.txt')))
-        label_indices = ['{0:04d}'.format(l) for l in range(len(label_paths))]
         if dataset == 'kittimots':
+            label_indices = ['{0:04d}'.format(l) for l in range(len(label_paths))]
             self.train_sequences = label_indices[:KITTIMOTS_SPLIT_POINT]
             self.val_sequences = label_indices[KITTIMOTS_SPLIT_POINT:]
         else:
+            label_indices = [item.split('/')[-1][:-4] for item in label_paths]
             self.train_sequences = label_indices
             self.val_sequences = label_indices
         
