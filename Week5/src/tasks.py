@@ -123,7 +123,10 @@ def task_b(model_name, model_file, checkpoint=None):
     val_loss = ValidationLoss(cfg)
     trainer.register_hooks([val_loss])
     trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
-    trainer.resume_or_load(resume=False)
+    if checkpoint:
+        trainer.resume_or_load(resume=True)
+    else:
+        trainer.resume_or_load(resume=False)
     trainer.train()
 
     # Evaluation
