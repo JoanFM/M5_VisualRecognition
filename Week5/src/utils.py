@@ -42,7 +42,6 @@ COCO_CATEGORIES_FROM_MOTS = {
 }
 
 
-
 class MOTS_Dataloader():
 
     def __init__(self, dataset='kittimots'):
