@@ -48,6 +48,7 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
     if checkpoint:
         print('Using Checkpoint')
         cfg.MODEL.WEIGHTS = checkpoint
+        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     
