@@ -1,11 +1,11 @@
 import os
 from glob import glob
 import json
+from copy import deepcopy
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 from pycocotools import coco
-import copy
 import torch
 
 from detectron2.engine import HookBase
@@ -15,33 +15,38 @@ from detectron2.structures import BoxMode
 
 
 MOTSCHALLENGE_DATA_DIR = '/home/mcv/datasets/MOTSChallenge/train/'
-MOTSCHALLENGE_TRAIN_IMG = MOTSCHALLENGE_DATA_DIR+'images'
-MOTSCHALLENGE_TRAIN_LABEL = MOTSCHALLENGE_DATA_DIR+'instances_txt'
-MOTSCHALLENGE_TRAIN_MASK = MOTSCHALLENGE_DATA_DIR+'instances'
+MOTSCHALLENGE_TRAIN_IMG = MOTSCHALLENGE_DATA_DIR + 'images'
+MOTSCHALLENGE_TRAIN_LABEL = MOTSCHALLENGE_DATA_DIR + 'instances_txt'
+MOTSCHALLENGE_TRAIN_MASK = MOTSCHALLENGE_DATA_DIR + 'instances'
 
 KITTIMOTS_SPLIT_POINT = 12
 KITTIMOTS_DATA_DIR = '/home/mcv/datasets/KITTI-MOTS/'
-KITTIMOTS_TRAIN_IMG = KITTIMOTS_DATA_DIR+'training/image_02'
-KITTIMOTS_TRAIN_LABEL = KITTIMOTS_DATA_DIR+'instances_txt'
-KITTIMOTS_TRAIN_MASK = KITTIMOTS_DATA_DIR+'instances'
+KITTIMOTS_TRAIN_IMG = KITTIMOTS_DATA_DIR + 'training/image_02'
+KITTIMOTS_TRAIN_LABEL = KITTIMOTS_DATA_DIR + 'instances_txt'
+KITTIMOTS_TRAIN_MASK = KITTIMOTS_DATA_DIR + 'instances'
 
 KITTI_CATEGORIES = {
     'Car': 1,
     'Dummy': 0, # We need 3 classes to not get NANs when evaluating, for some reason, duh
     'Pedestrian': 2
 }
+COCO_CATEGORIES_FROM_KITTI = {
+    1: 2,
+    2: 0
+}
 MOTS_CATEGORIES = {
-    'Pedestrian': 2,
-    'Dummy': 0
+    'Pedestrian': 2
 }
-COCO_CATEGORIES = {
-    1: 0,
-    2: 2
+COCO_CATEGORIES_FROM_MOTS = {
+    2: 0
 }
+
+
 
 class MOTS_Dataloader():
 
-    def __init__(self,dataset='kittimots'):
+    def __init__(self, dataset='kittimots'):
+        self.dataset = dataset
         if dataset == 'kittimots':
             self.train_img_dir = KITTIMOTS_TRAIN_IMG
             self.train_label_dir = KITTIMOTS_TRAIN_LABEL
@@ -51,7 +56,8 @@ class MOTS_Dataloader():
             self.train_label_dir = MOTSCHALLENGE_TRAIN_LABEL
             self.train_mask_dir = MOTSCHALLENGE_TRAIN_MASK
         else:
-            raise ValueError('dataset must be "kittimots" or "motschellenge".')
+            raise ValueError('Dataset must be "kittimots" or "motschallenge".')
+
         if not os.path.isdir(self.train_img_dir):
             raise Exception('The image directory is not correct.')
         if not os.path.isdir(self.train_label_dir):
@@ -64,7 +70,7 @@ class MOTS_Dataloader():
             label_indices = ['{0:04d}'.format(l) for l in range(len(label_paths))]
             self.train_sequences = label_indices[:KITTIMOTS_SPLIT_POINT]
             self.val_sequences = label_indices[KITTIMOTS_SPLIT_POINT:]
-        else:
+        elif dataset == 'motschallenge':
             label_indices = [item.split('/')[-1][:-4] for item in label_paths]
             self.train_sequences = label_indices
             self.val_sequences = label_indices
@@ -91,8 +97,8 @@ class MOTS_Dataloader():
             self.extension_flag = True
         mask_paths = sorted(glob(os.path.join(self.train_mask_dir, seq, '*.png')))
 
-        label_path = os.path.join(self.train_label_dir, seq+'.txt')
-        with open(label_path,'r') as file:
+        label_path = os.path.join(self.train_label_dir, seq + '.txt')
+        with open(label_path, 'r') as file:
             lines = file.readlines()
             lines = [l.split(' ') for l in lines]
 
@@ -111,7 +117,8 @@ class MOTS_Dataloader():
         frame_annotations = []
         for detection in frame_lines:
             category_id = int(detection[2])
-            if category_id not in KITTI_CATEGORIES.values():
+            if self.dataset == 'kittimots' and category_id not in KITTI_CATEGORIES.values() or \
+                    self.dataset == 'motschallenge' and category_id not in MOTS_CATEGORIES.values():
                 continue
 
             rle = {
@@ -131,7 +138,8 @@ class MOTS_Dataloader():
                 continue
 
             annotation = {
-                'category_id': COCO_CATEGORIES[category_id],
+                'category_id': COCO_CATEGORIES_FROM_KITTI[category_id] if self.dataset == 'kittimots' \
+                               else COCO_CATEGORIES_FROM_MOTS[category_id],
                 'bbox_mode': BoxMode.XYXY_ABS,
                 'bbox': bbox,
                 'segmentation': seg,
@@ -182,25 +190,26 @@ class ValidationLoss(HookBase):
                                                  **loss_dict_reduced)
                 if losses_reduced < self.best_loss:
                     self.best_loss = losses_reduced
-                    self.weights = copy.deepcopy(self.trainer.model.state_dict())
+                    self.weights = deepcopy(self.trainer.model.state_dict())
 
 
 def plot_validation_loss(cfg, iterations, model_name, savepath):
     val_loss = []
     train_loss = []
-    for line in open(os.path.join(cfg.OUTPUT_DIR, "metrics.json"), "r"):
+    for line in open(os.path.join(cfg.OUTPUT_DIR, 'metrics.json'), 'r'):
         result = json.loads(line)
-        if ('total_val_loss' in result.keys()) and ('total_loss' in result.keys()):
-            val_loss.append(result["total_val_loss"])
-            train_loss.append(result["total_loss"])
-    val_idx = [int(item) for item in list(np.linspace(0,iterations,len(val_loss)))]
-    train_idx = [int(item) for item in list(np.linspace(0,iterations,len(train_loss)))]
-    plt.figure(figsize=(10,10))
-    plt.plot(val_idx,val_loss, label="Validation Loss")
-    plt.plot(train_idx,train_loss, label="Training Loss")
-    plt.title('Validation Loss for model '+'{0}'.format(model_name))
+        if 'total_val_loss' in result.keys() and 'total_loss' in result.keys():
+            val_loss.append(result['total_val_loss'])
+            train_loss.append(result['total_loss'])
+    val_idx = [int(item) for item in list(np.linspace(0, iterations, len(val_loss)))]
+    train_idx = [int(item) for item in list(np.linspace(0, iterations, len(train_loss)))]
+
+    plt.figure(figsize=(10, 10))
+    plt.plot(val_idx,val_loss, label='Validation Loss')
+    plt.plot(train_idx,train_loss, label='Training Loss')
+    plt.title('Validation Loss for model ' + '{0}'.format(model_name))
     plt.xlabel('Iterations')
-    plt.ylabel('Validation_Loss')
+    plt.ylabel('Validation Loss')
     plt.grid('True')
     plt.legend()
-    plt.savefig(os.path.join(savepath,'validation_loss.png'))
+    plt.savefig(os.path.join(savepath, 'validation_loss.png'))

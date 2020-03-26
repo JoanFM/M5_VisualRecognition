@@ -16,10 +16,11 @@ from .utils import MOTS_Dataloader
 from .utils import KITTI_CATEGORIES, MOTS_CATEGORIES
 from .utils import ValidationLoss, plot_validation_loss
 
+
 def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=True):
     if checkpoint:
         print('Running task A for model', model_name)
-        SAVE_PATH = os.path.join('./results_week_5_task_a', model_name+'_wCheckpoint')
+        SAVE_PATH = os.path.join('./results_week_5_task_a', model_name + '_wCheckpoint')
     else:
         print('Running task A for model', model_name)
         SAVE_PATH = os.path.join('./results_week_5_task_a', model_name)
@@ -99,8 +100,8 @@ def task_b(model_name, model_file, checkpoint=None):
     print('Loading Model')
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
-    cfg.DATASETS.TRAIN = ('MOTS_train',)
-    cfg.DATASETS.TEST = ('KITTIMOTS_val',)
+    cfg.DATASETS.TRAIN = ('MOTS_train', )
+    cfg.DATASETS.TEST = ('KITTIMOTS_val', )
     cfg.DATALOADER.NUM_WORKERS = 0
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
