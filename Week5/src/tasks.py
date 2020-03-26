@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import cv2
+import torch
 
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor, DefaultTrainer
@@ -93,7 +94,7 @@ def task_b(model_name, model_file, checkpoint=None):
     def mots_train(): return motsloader.get_dicts(train_flag=True)
     def kitti_val(): return kittiloader.get_dicts(train_flag=False)
     DatasetCatalog.register('MOTS_train', mots_train)
-    MetadataCatalog.get('MOTS_train').set(thing_classes=list(MOTS_CATEGORIES.keys()))
+    MetadataCatalog.get('MOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     DatasetCatalog.register('KITTIMOTS_val', kitti_val)
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
@@ -107,7 +108,11 @@ def task_b(model_name, model_file, checkpoint=None):
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     if checkpoint:
-        cfg.MODEL.WEIGHTS = checkpoint
+        last_checkpoint = torch.load(checkpoint)
+        new_path = checkpoint.split('.')[0]+'_modified.pth'
+        last_checkpoint['iteration'] = -1
+        torch.save(last_checkpoint,new_path)
+        cfg.MODEL.WEIGHTS = new_path
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
@@ -123,10 +128,7 @@ def task_b(model_name, model_file, checkpoint=None):
     val_loss = ValidationLoss(cfg)
     trainer.register_hooks([val_loss])
     trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
-    if checkpoint:
-        trainer.resume_or_load(resume=True)
-    else:
-        trainer.resume_or_load(resume=False)
+    trainer.resume_or_load(resume=False)
     trainer.train()
 
     # Evaluation
