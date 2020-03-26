@@ -18,11 +18,10 @@ from .utils import ValidationLoss, plot_validation_loss
 
 
 def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=True):
+    print('Running task A for model', model_name)
     if checkpoint:
-        print('Running task A for model', model_name)
         SAVE_PATH = os.path.join('./results_week_5_task_a', model_name + '_wCheckpoint')
     else:
-        print('Running task A for model', model_name)
         SAVE_PATH = os.path.join('./results_week_5_task_a', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
@@ -80,10 +79,11 @@ def task_a(model_name, model_file, checkpoint=None, evaluate=True, visualize=Tru
             cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def task_b(model_name, model_file, checkpoint=None):
-    model_name = model_name
     print('Running task B for model', model_name)
-
-    SAVE_PATH = os.path.join('./results_week_5_task_b', model_name)
+    if checkpoint:
+        SAVE_PATH = os.path.join('./results_week_5_task_b', model_name + '_wCheckpoint')
+    else:
+        SAVE_PATH = os.path.join('./results_week_5_task_b', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
@@ -93,7 +93,7 @@ def task_b(model_name, model_file, checkpoint=None):
     def mots_train(): return motsloader.get_dicts(train_flag=True)
     def kitti_val(): return kittiloader.get_dicts(train_flag=False)
     DatasetCatalog.register('MOTS_train', mots_train)
-    MetadataCatalog.get('MOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    MetadataCatalog.get('MOTS_train').set(thing_classes=list(MOTS_CATEGORIES.keys()))
     DatasetCatalog.register('KITTIMOTS_val', kitti_val)
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
