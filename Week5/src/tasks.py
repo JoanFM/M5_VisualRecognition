@@ -86,7 +86,30 @@ def task_b(model_name, model_file, checkpoint=None):
     else:
         SAVE_PATH = os.path.join('./results_week_5_task_b', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
+    loading_data()
+    # DEFAULT PARAMETERS
+    hyperparams = {
+        'lr': 0.00025,
+        'batch': 4,
+        'scheduler': 'WarmupMultiStepLR',
+        'iou': [0.3,0.7],
+        'top_k_train': 12000
+    }
+    training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=checkpoint)
+    
+def task_c(model_name, model_file, checkpoint=None):
+    print('Running task C for model', model_name)
+    SAVE_PATH = os.path.join('./results_week_5_task_c', model_name)
+    os.makedirs(SAVE_PATH, exist_ok=True)
+    loading_data()
+    loop = get_hyper_params()
+    for hyperparams in loop:
+        print('Running experiment with params:')
+        for key, value in hyperparams.items():
+            print('{0}: {1}'.format(key,value))
+        training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=checkpoint)
 
+def loading_data():
     # Loading data
     print('Loading data')
     motsloader = MOTS_Dataloader(dataset='motschallenge')
@@ -98,6 +121,7 @@ def task_b(model_name, model_file, checkpoint=None):
     DatasetCatalog.register('KITTIMOTS_val', kitti_val)
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
+def training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=None,):
     # Load model and configuration
     print('Loading Model')
     cfg = get_cfg()
@@ -115,8 +139,11 @@ def task_b(model_name, model_file, checkpoint=None):
         cfg.MODEL.WEIGHTS = new_path
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
-    cfg.SOLVER.IMS_PER_BATCH = 4
-    cfg.SOLVER.BASE_LR = 0.00025
+    cfg.SOLVER.IMS_PER_BATCH = hyperparams['batch']
+    cfg.SOLVER.BASE_LR = hyperparams['lr']
+    cfg.SOLVER.SOLVER.LR_SCHEDULER_NAME = hyperparams['scheduler']
+    cfg.MODEL.RPN.IOU_THRESHOLDS = hyperparams['iou']
+    cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = hyperparams['top_k_train']
     cfg.SOLVER.MAX_ITER = 4000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
@@ -143,6 +170,7 @@ def task_b(model_name, model_file, checkpoint=None):
     print('Getting qualitative results')
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
+    def kitti_val(): return kittiloader.get_dicts(train_flag=False)
     inputs = kitti_val()
     inputs = inputs[:20] + inputs[-20:]
     for i, input in enumerate(inputs):
@@ -157,3 +185,22 @@ def task_b(model_name, model_file, checkpoint=None):
             instance_mode=ColorMode.IMAGE)
         v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
         cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+
+def get_hyper_params():
+    lr = [0.001, 0.0025, 0.0001, 0.00025, 0.0005]
+    batch = [4, 8, 16]
+    scheduler = ['WarmupMultiStepLR','WarmupCosineLR']
+    iou = [[0.2, 0.8],[0.3, 0.7],[0.4, 0.6]]
+    top_k_train = [6000, 9000, 12000, 15000]
+    loop = []
+    for value in lr:
+        loop.append({ 'lr': value, 'batch': 4, 'scheduler': 'WarmupMultiStepLR', 'iou': [0.3,0.7], 'top_k_train': 12000})
+    for value in batch:
+        loop.append({ 'lr': 0.00025, 'batch': value, 'scheduler': 'WarmupMultiStepLR', 'iou': [0.3,0.7], 'top_k_train': 12000})
+    for value in scheduler:
+        loop.append({ 'lr': 0.00025, 'batch': 4, 'scheduler': value, 'iou': [0.3,0.7], 'top_k_train': 12000})
+    for value in iou:
+        loop.append({ 'lr': 0.00025, 'batch': 4, 'scheduler': 'WarmupMultiStepLR', 'iou': value, 'top_k_train': 12000})
+    for value in batch:
+        loop.append({ 'lr': 0.00025, 'batch': 4, 'scheduler': 'WarmupMultiStepLR', 'iou': [0.3,0.7], 'top_k_train': value})
+    return loop
