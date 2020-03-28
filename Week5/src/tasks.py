@@ -95,7 +95,7 @@ def task_b(model_name, model_file, checkpoint=None):
         'iou': [0.3,0.7],
         'top_k_train': 12000
     }
-    training_loop(SAVE_PATH, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=True)
+    training_loop(SAVE_PATH, model_name, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=True)
     
 def task_c(model_name, model_file, checkpoint=None):
     print('Running task C for model', model_name)
@@ -107,7 +107,7 @@ def task_c(model_name, model_file, checkpoint=None):
         print('Running experiment with params:')
         for key, value in hyperparams.items():
             print('{0}: {1}'.format(key,value))
-        training_loop(SAVE_PATH, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=False)
+        training_loop(SAVE_PATH, model_name, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=False)
 
 def loading_data():
     # Loading data
@@ -122,7 +122,7 @@ def loading_data():
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     return kitti_val, mots_train
 
-def training_loop(SAVE_PATH, model_file, hyperparams, dataloader, checkpoint=None, visualize=True):
+def training_loop(SAVE_PATH, model_name, model_file, hyperparams, dataloader, checkpoint=None, visualize=True):
     # Load model and configuration
     print('Loading Model')
     cfg = get_cfg()
@@ -145,7 +145,7 @@ def training_loop(SAVE_PATH, model_file, hyperparams, dataloader, checkpoint=Non
     cfg.SOLVER.LR_SCHEDULER_NAME = hyperparams['scheduler']
     cfg.MODEL.RPN.IOU_THRESHOLDS = hyperparams['iou']
     cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = hyperparams['top_k_train']
-    cfg.SOLVER.MAX_ITER = 4000
+    cfg.SOLVER.MAX_ITER = 1000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     cfg.TEST.SCORE_THRESH = 0.5
@@ -167,28 +167,29 @@ def training_loop(SAVE_PATH, model_file, hyperparams, dataloader, checkpoint=Non
     print('Plotting losses')
     plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, model_name, SAVE_PATH)
 
-    # Qualitative results: visualize some results
-    print('Getting qualitative results')
-    predictor = DefaultPredictor(cfg)
-    predictor.model.load_state_dict(trainer.model.state_dict())
-    def kitti_val(): return dataloader.get_dicts(train_flag=False)
-    inputs = kitti_val()
-    inputs = inputs[:20] + inputs[-20:]
-    for i, input in enumerate(inputs):
-        file_name = input['file_name']
-        print('Prediction on image ' + file_name)
-        img = cv2.imread(file_name)
-        outputs = predictor(img)
-        v = Visualizer(
-            img[:, :, ::-1],
-            metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]),
-            scale=0.8,
-            instance_mode=ColorMode.IMAGE)
-        v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
-        cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
+    if visualize:
+        # Qualitative results: visualize some results
+        print('Getting qualitative results')
+        predictor = DefaultPredictor(cfg)
+        predictor.model.load_state_dict(trainer.model.state_dict())
+        def kitti_val(): return dataloader.get_dicts(train_flag=False)
+        inputs = kitti_val()
+        inputs = inputs[:20] + inputs[-20:]
+        for i, input in enumerate(inputs):
+            file_name = input['file_name']
+            print('Prediction on image ' + file_name)
+            img = cv2.imread(file_name)
+            outputs = predictor(img)
+            v = Visualizer(
+                img[:, :, ::-1],
+                metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]),
+                scale=0.8,
+                instance_mode=ColorMode.IMAGE)
+            v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
+            cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + model_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
 def get_hyper_params():
-    lr = [0.001, 0.0025, 0.0001, 0.00025, 0.0005]
+    lr = [0.0025, 0.0001, 0.00025, 0.0005]
     batch = [4, 8, 16]
     scheduler = ['WarmupMultiStepLR','WarmupCosineLR']
     iou = [[0.2, 0.8],[0.3, 0.7],[0.4, 0.6]]
