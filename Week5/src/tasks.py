@@ -86,7 +86,7 @@ def task_b(model_name, model_file, checkpoint=None):
     else:
         SAVE_PATH = os.path.join('./results_week_5_task_b', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
-    loading_data()
+    kitti_val, _ = loading_data()
     # DEFAULT PARAMETERS
     hyperparams = {
         'lr': 0.00025,
@@ -95,19 +95,19 @@ def task_b(model_name, model_file, checkpoint=None):
         'iou': [0.3,0.7],
         'top_k_train': 12000
     }
-    training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=checkpoint)
+    training_loop(SAVE_PATH, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=True)
     
 def task_c(model_name, model_file, checkpoint=None):
     print('Running task C for model', model_name)
     SAVE_PATH = os.path.join('./results_week_5_task_c', model_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
-    loading_data()
+    kitti_val, _ = loading_data()
     loop = get_hyper_params()
     for hyperparams in loop:
         print('Running experiment with params:')
         for key, value in hyperparams.items():
             print('{0}: {1}'.format(key,value))
-        training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=checkpoint)
+        training_loop(SAVE_PATH, model_file, hyperparams, kitti_val, checkpoint=checkpoint, visualize=False)
 
 def loading_data():
     # Loading data
@@ -120,8 +120,9 @@ def loading_data():
     MetadataCatalog.get('MOTS_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     DatasetCatalog.register('KITTIMOTS_val', kitti_val)
     MetadataCatalog.get('KITTIMOTS_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    return kitti_val, mots_train
 
-def training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=None,):
+def training_loop(SAVE_PATH, model_file, hyperparams, dataloader, checkpoint=None, visualize=True):
     # Load model and configuration
     print('Loading Model')
     cfg = get_cfg()
@@ -170,7 +171,7 @@ def training_loop(SAVE_PATH, model_file, hyperparams, checkpoint=None,):
     print('Getting qualitative results')
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
-    def kitti_val(): return kittiloader.get_dicts(train_flag=False)
+    def kitti_val(): return dataloader.get_dicts(train_flag=False)
     inputs = kitti_val()
     inputs = inputs[:20] + inputs[-20:]
     for i, input in enumerate(inputs):

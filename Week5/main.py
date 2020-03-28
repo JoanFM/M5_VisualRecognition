@@ -1,4 +1,4 @@
-from src.tasks import task_a, task_b
+from src.tasks import task_a, task_b, task_c
 
 
 def main():
@@ -26,9 +26,11 @@ def main():
     # TASK B
     # task_b("MaskRCNN_R_50_FPN", "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", checkpoint=None)
     # task_b("MaskRCNN_R_50_FPN_Cityscapes", "Cityscapes/mask_rcnn_R_50_FPN.yaml", checkpoint=None)
-    task_b("MaskRCNN_R_50_FPN", "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", checkpoint="results_week_4_task_b/MaskRCNN_R_50_FPN/model_final.pth")
+    # task_b("MaskRCNN_R_50_FPN", "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", checkpoint="results_week_4_task_b/MaskRCNN_R_50_FPN/model_final.pth")
     # task_b("MaskRCNN_R_50_FPN_Cityscapes", "Cityscapes/mask_rcnn_R_50_FPN.yaml", checkpoint="results_week_4_task_b/MaskRCNN_R_50_FPN_Cityscapes/model_final.pth")
 
+    # TASK C
+    task_c("MaskRCNN_R_50_FPN_Cityscapes","Cityscapes/mask_rcnn_R_50_FPN.yaml",checkpoint="results_week_5_task_b/MaskRCNN_R_50_FPN_Cityscapes_wCheckpoint/model_final.pth")
 
 if __name__ == '__main__':
     main()
