@@ -33,9 +33,9 @@ def experiment_2(exp_name, model_file):
     def rkitti_test(): return kittiloader.get_dicts(flag='test')
     DatasetCatalog.register('Virtual_train', vkitti_train)
     MetadataCatalog.get('Virtual_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
-    DatasetCatalog.register('KITTI_val', kitti_val)
+    DatasetCatalog.register('KITTI_val', rkitti_val)
     MetadataCatalog.get('KITTI_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
-    DatasetCatalog.register('KITTI_test', kitti_val)
+    DatasetCatalog.register('KITTI_test', rkitti_test)
     MetadataCatalog.get('KITTI_test').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
     # Load model and configuration
@@ -53,7 +53,7 @@ def experiment_2(exp_name, model_file):
     cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
     cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
     cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
-    cfg.SOLVER.MAX_ITER = 8000
+    cfg.SOLVER.MAX_ITER = 1000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     cfg.TEST.SCORE_THRESH = 0.5

@@ -21,7 +21,7 @@ from .utils import ValidationLoss, plot_validation_loss
 def experiment_4(exp_name, model_file, method):
 
     print('Running Task B experiment', exp_name)
-    SAVE_PATH = os.path.join('./results_week_6', exp_name)
+    SAVE_PATH = os.path.join('./results_week_6', exp_name+'_'+method)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
@@ -36,6 +36,7 @@ def experiment_4(exp_name, model_file, method):
     MetadataCatalog.get('KITTI_test').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
     for per in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]:
+        print('Iteration 100% Virtual & {0}% Real'.format(per*100))
         if os.path.isfile(os.path.join(SAVE_PATH, 'metrics.json')):
             os.remove(os.path.join(SAVE_PATH, 'metrics.json'))
         def vkitti_train():
@@ -43,7 +44,7 @@ def experiment_4(exp_name, model_file, method):
             real = kittiloader.get_dicts(flag='train', method=method, percentage=per)
             all_data = virtual + real
             return all_data
-        catalog_name = 'ALL_train_{0}'format(int(per*10))
+        catalog_name = 'ALL_train_{0}'.format(int(per*10))
         DatasetCatalog.register(catalog_name, vkitti_train)
         MetadataCatalog.get(catalog_name).set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
@@ -62,7 +63,7 @@ def experiment_4(exp_name, model_file, method):
         cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
         cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
         cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
-        cfg.SOLVER.MAX_ITER = 8000
+        cfg.SOLVER.MAX_ITER = 1000
         cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
         cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
         cfg.TEST.SCORE_THRESH = 0.5

@@ -1,28 +1,25 @@
-import numpy as np
-import cv2
-from PIL import Image
-from glob import glob
-from collections import defaultdict
-import pickle
-from itertools import groupby
+from src.experiment_1 import experiment_1
+from src.experiment_2 import experiment_2
+from src.experiment_3 import experiment_3
+from src.experiment_4 import experiment_4
 
+"""
+    MASK RCNN Configurations:
+        - COCO-InstanceSegmentation/mask_rcnn_R_50_C4_3x.yaml
+        - COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_3x.yaml
+        - COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml
+        - COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x.yaml
+        - COCO-InstanceSegmentation/mask_rcnn_R_101_DC5_3x.yaml
+        - COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml
+        - Cityscapes/mask_rcnn_R_50_FPN.yaml
 
-
-def binary_mask_to_rle(binary_mask):
-    rle = {'counts': [], 'size': list(binary_mask.shape)}
-    counts = rle.get('counts')
-    for i, (value, elements) in enumerate(groupby(binary_mask.ravel(order='F'))):
-        if i == 0 and value == 1:
-            counts.append(0)
-        counts.append(len(list(elements)))
-    return rle
+    CHECKPOINTS from virtual kitti:
+        - 
+    """
 
 if __name__ == "__main__":
-    img_paths = sorted(glob('Week6/masks_1/*.png'))
-    for k,path in enumerate(img_paths[:5]):
-        img = np.array(Image.open(path))
-        mask = (img==1)/1
-        rle = binary_mask_to_rle(mask)
-        cv2.imwrite('priba.png',mask)
-        print(np.unique(img))
-        print('\n')
+    experiment_1('exp1','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml')
+    #experiment_2('exp2','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml')
+    #experiment_3('exp3','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml',checkpoint='results_week_6/exp2/model_final.pth')
+    #experiment_4('exp4','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml','complete')
+    #experiment_4('exp4','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml','random')
