@@ -102,10 +102,10 @@ class KittiMots():
             seq_dicts = self.get_seq_dicts(seq)
             dataset_dicts += seq_dicts
         if method == 'complete':
-            split_point = len(dataset_dicts)*percentage
+            split_point = int(len(dataset_dicts)*percentage)
             result = dataset_dicts[:split_point]
         elif method == 'random':
-            split_point = len(dataset_dicts)*percentage
+            split_point = int(len(dataset_dicts)*percentage)
             result = shuffle(dataset_dicts)[:split_point]
         else:
             raise ValueError('Method only accepts "complete" or "random".')
