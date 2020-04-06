@@ -5,6 +5,7 @@ from itertools import groupby
 from pycocotools import coco
 from random import shuffle
 from glob import glob
+from copy import deepcopy
 import numpy as np
 import json
 import torch
