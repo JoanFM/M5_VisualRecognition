@@ -30,9 +30,9 @@ def experiment_4(exp_name, model_file, method):
     kittiloader = KittiMots()
     def rkitti_val(): return kittiloader.get_dicts(flag='val')
     def rkitti_test(): return kittiloader.get_dicts(flag='test')
-    DatasetCatalog.register('KITTI_val', kitti_val)
+    DatasetCatalog.register('KITTI_val', rkitti_val)
     MetadataCatalog.get('KITTI_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
-    DatasetCatalog.register('KITTI_test', kitti_val)
+    DatasetCatalog.register('KITTI_test', rkitti_test)
     MetadataCatalog.get('KITTI_test').set(thing_classes=list(KITTI_CATEGORIES.keys()))
 
     for per in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]:
