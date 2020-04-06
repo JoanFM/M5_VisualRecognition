@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 import pycocotools.mask as mask_utils
 from itertools import groupby
+from PIL import Image
 from pycocotools import coco
 from random import shuffle
 from glob import glob
@@ -187,7 +188,7 @@ class VirtualKitti():
         mask_paths = sorted(glob(VIRTUAL_KITTI_DATA_DIR+seq+INTERMIDIATE_MASK+os.sep+'*.png'))
         seq_dicts = []
         for k, (m_path, i_path) in enumerate(zip(mask_paths,image_paths)):
-            img = np.array(Image.open(m_path))
+            img = np.array(Image.open(m_path)).astype(np.uint8)
             frame_annotations = self.get_frame_annotations(img)
             img_dict = self.get_img_dict(seq, k, i_path, img, frame_annotations)
             seq_dicts.append(img_dict)
@@ -198,7 +199,9 @@ class VirtualKitti():
         frame_annotations = []
         instances = np.unique(img)
         for ins in instances[1:]:
-            mask = (img==ins)/ins
+            mask = np.copy(img)
+            mask[(mask==ins)] = 1
+            mask[(mask!=1)] = 0
             rle = mask_utils.frPyObjects(binary_mask_to_rle(mask), w, h)
             bbox = coco.maskUtils.toBbox(rle).tolist()
             bbox[2] += bbox[0]
