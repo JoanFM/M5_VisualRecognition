@@ -19,8 +19,8 @@ from detectron2.structures import BoxMode
 
 # -- CONSTANTS -- #
 KITTI_CATEGORIES = {
-    'Car': 1,
-    'Dummy': 0, # We need 2 classes to not get NANs when evaluating, for some reason, duh
+    'Dummy': 1,
+    'Car': 0, # We need 2 classes to not get NANs when evaluating, for some reason, duh
 }
 COCO_CATEGORIES = {
     1: 2,
@@ -172,7 +172,7 @@ class KittiMots():
 
 class VirtualKitti():
     def __init__(self):
-        self.sequences = ['Scene{0:02d}'.format(l) for l in item in TRAIN_SEQ]
+        self.sequences = ['Scene{0:02d}'.format(l) for l in TRAIN_SEQ]
         print(f'Train Sequences: {self.sequences}')
     
     def get_dicts(self):
