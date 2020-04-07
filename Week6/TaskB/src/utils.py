@@ -111,7 +111,7 @@ class KittiMots():
             result = shuffle(dataset_dicts)[:split_point]
         else:
             raise ValueError('Method only accepts "complete" or "random".')
-        return result[:25]
+        return result
 
     def get_seq_dicts(self, seq):
         image_paths = sorted(glob(os.path.join(self.train_img_dir, seq, '*.png')))
@@ -181,7 +181,7 @@ class VirtualKitti():
         for seq in self.sequences:
             seq_dicts = self.get_seq_dicts(seq)
             dataset_dicts += seq_dicts
-        return dataset_dicts[:25]
+        return dataset_dicts
     
     def get_seq_dicts(self, seq):
         image_paths = sorted(glob(VIRTUAL_KITTI_DATA_DIR+seq+INTERMIDIATE_IMG+os.sep+'*.jpg'))
