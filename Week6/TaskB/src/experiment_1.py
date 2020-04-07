@@ -43,14 +43,14 @@ def experiment_1(exp_name, model_file):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train', )
     cfg.DATASETS.TEST = ('KITTI_val', )
-    cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.DATALOADER.NUM_WORKERS = 4
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.0005
     cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
     cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
     cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
-    cfg.SOLVER.MAX_ITER = 200
+    cfg.SOLVER.MAX_ITER = 1000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
     cfg.TEST.SCORE_THRESH = 0.5
@@ -70,11 +70,30 @@ def experiment_1(exp_name, model_file):
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7   # set the testing threshold for this model
     cfg.DATASETS.TEST = ('KITTI_test', )
+    predictor = DefaultPredictor(cfg)
+
+    predictions_path = os.path.join(SAVE_PATH, "predictions.pkl")
+    inputs = rkitti_test()
+    if (os.path.exists(predictions_path)):
+        predictions = pickle.load(open(predictions_path, "rb"))
+    else:
+        print('Using Model to predict on input')
+        predictions = []
+        for i, input_test in enumerate(inputs):
+            img_path = input_test['file_name']
+            img = cv2.imread(img_path)
+            prediction = predictor(img)
+            predictions.append(prediction)
+        pickle.dump(predictions, open(predictions_path, "wb"))
+
+    print('Evaluating......')
+    evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
+    evaluator.reset()
+    evaluator.process(rkitti_test(), predictions)
+    evaluator.evaluate()
 
     # Qualitative results: visualize some results
-    predictor = DefaultPredictor(cfg)
     print('Inference')
-    inputs = rkitti_test()
     inputs = inputs[:20] + inputs[-20:]
     for i, input in enumerate(inputs):
         file_name = input['file_name']
@@ -89,7 +108,9 @@ def experiment_1(exp_name, model_file):
         v = v.draw_instance_predictions(outputs['instances'].to('cpu'))
         cv2.imwrite(os.path.join(SAVE_PATH, 'Inference_' + exp_name + '_inf_' + str(i) + '.png'), v.get_image()[:, :, ::-1])
 
+    """
     print('Evaluating...')
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
     val_loader = build_detection_test_loader(cfg, 'KITTI_test')
     inference_on_dataset(trainer.model, val_loader, evaluator)
+    """
