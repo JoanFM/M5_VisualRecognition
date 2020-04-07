@@ -20,8 +20,7 @@ from detectron2.structures import BoxMode
 
 # -- CONSTANTS -- #
 KITTI_CATEGORIES = {
-    'Dummy': 1,
-    'Car': 0, # We need 2 classes to not get NANs when evaluating, for some reason, duh
+    'Car': 0
 }
 COCO_CATEGORIES = {
     1: 2,
@@ -151,7 +150,7 @@ class KittiMots():
             if not seg:
                 continue
             annotation = {
-                'category_id': COCO_CATEGORIES[category_id],
+                'category_id': 2,
                 'bbox_mode': BoxMode.XYXY_ABS,
                 'bbox': bbox,
                 'segmentation': seg,

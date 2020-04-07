@@ -44,24 +44,21 @@ def experiment_1(exp_name, model_file):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train', )
     cfg.DATASETS.TEST = ('KITTI_val', )
-    cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.DATALOADER.NUM_WORKERS = 4
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.0005
-    cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
-    cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
-    cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
     cfg.SOLVER.MAX_ITER = 500
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 
     # Training
     print('Training')
     trainer = DefaultTrainer(cfg)
-    val_loss = ValidationLoss(cfg)
-    trainer.register_hooks([val_loss])
-    trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
+    #val_loss = ValidationLoss(cfg)
+    #trainer.register_hooks([val_loss])
+    #trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
     trainer.resume_or_load(resume=False)
     trainer.train()
 
@@ -69,10 +66,15 @@ def experiment_1(exp_name, model_file):
     # Evaluation
     print('Evaluating')
     evaluator = COCOEvaluator('KITTI_val', cfg, False, output_dir=SAVE_PATH)
-    trainer.model.load_state_dict(val_loss.weights)
+    #trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
-    print('Plotting losses')
-    plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, exp_name, SAVE_PATH, 'validation_loss.png')
+    """
+    evaluator = COCOEvaluator("balloon_val", cfg, False, output_dir="./output/")
+    val_loader = build_detection_test_loader(cfg, "balloon_val")
+    inference_on_dataset(trainer.model, val_loader, evaluator)
+    """
+    #print('Plotting losses')
+    #plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, exp_name, SAVE_PATH, 'validation_loss.png')
 
     # Qualitative results: visualize some results
     print('Getting qualitative results')
