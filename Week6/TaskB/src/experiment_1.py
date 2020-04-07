@@ -67,9 +67,15 @@ def experiment_1(exp_name, model_file):
 
     # Evaluation
     print('Evaluating')
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7   # set the testing threshold for this model
+    cfg.DATASETS.TEST = ('KITTI_test', )
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
+    val_loader = build_detection_test_loader(cfg, 'KITTI_test')
+    """
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
+    """
     print('Plotting losses')
     plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, exp_name, SAVE_PATH, 'validation_loss.png')
 
