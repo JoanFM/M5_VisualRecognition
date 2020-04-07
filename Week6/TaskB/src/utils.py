@@ -20,7 +20,6 @@ from detectron2.structures import BoxMode
 
 # -- CONSTANTS -- #
 KITTI_CATEGORIES = {
-    'Dummy': 1,
     'Car': 0, # We need 2 classes to not get NANs when evaluating, for some reason, duh
 }
 COCO_CATEGORIES = {

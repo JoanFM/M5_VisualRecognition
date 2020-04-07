@@ -43,7 +43,7 @@ def experiment_1(exp_name, model_file):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train', )
     cfg.DATASETS.TEST = ('KITTI_val', )
-    cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.DATALOADER.NUM_WORKERS = 2
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.0005
@@ -52,7 +52,7 @@ def experiment_1(exp_name, model_file):
     cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
     cfg.SOLVER.MAX_ITER = 200
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.TEST.SCORE_THRESH = 0.5
 
     # Training
