@@ -20,7 +20,8 @@ from detectron2.structures import BoxMode
 
 # -- CONSTANTS -- #
 KITTI_CATEGORIES = {
-    'Car': 0
+    'Dummy': 1,
+    'Car': 0, 
 }
 COCO_CATEGORIES = {
     1: 2,

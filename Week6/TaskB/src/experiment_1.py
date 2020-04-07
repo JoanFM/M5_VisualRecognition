@@ -51,7 +51,7 @@ def experiment_1(exp_name, model_file):
     cfg.SOLVER.BASE_LR = 0.0005
     cfg.SOLVER.MAX_ITER = 500
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
 
     # Training
     print('Training')
