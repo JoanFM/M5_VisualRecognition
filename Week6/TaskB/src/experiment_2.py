@@ -55,7 +55,7 @@ def experiment_2(exp_name, model_file):
     cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
     cfg.SOLVER.MAX_ITER = 4000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
     cfg.TEST.SCORE_THRESH = 0.5
 
     # Training
