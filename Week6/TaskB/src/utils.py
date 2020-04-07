@@ -151,7 +151,7 @@ class KittiMots():
             if not seg:
                 continue
             annotation = {
-                'category_id': 2,
+                'category_id': COCO_CATEGORIES[category_id],
                 'bbox_mode': BoxMode.XYXY_ABS,
                 'bbox': bbox,
                 'segmentation': seg,
@@ -225,7 +225,7 @@ class VirtualKitti():
         h, w = img.shape
         img_dict = {
             'file_name': filename,
-            'image_id': k + (int(seq[-2:]) * 1e3),
+            'image_id': k + (int(seq[-2:]) * 1e6),
             'height': h,
             'width': w,
             'annotations': frame_annotations
