@@ -22,13 +22,13 @@ from .utils import ValidationLoss, plot_validation_loss
 def experiment_1(exp_name, model_file):
 
     print('Running Task B experiment', exp_name)
-    SAVE_PATH = os.path.join('./results_week_6', exp_name)
+    SAVE_PATH = os.path.join('./results_week_6_task_b', exp_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
     print('Loading data')
     kittiloader = KittiMots()
-    def rkitti_train(): return kittiloader.get_dicts(flag='train', method='complete', percentage= 1.0)
+    def rkitti_train(): return kittiloader.get_dicts(flag='train', method='complete', percentage=1.0)
     def rkitti_val(): return kittiloader.get_dicts(flag='val')
     def rkitti_test(): return kittiloader.get_dicts(flag='test')
     DatasetCatalog.register('KITTI_train', rkitti_train)
@@ -45,40 +45,35 @@ def experiment_1(exp_name, model_file):
     cfg.DATASETS.TRAIN = ('KITTI_train', )
     cfg.DATASETS.TEST = ('KITTI_val', )
     cfg.DATALOADER.NUM_WORKERS = 4
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
     cfg.SOLVER.IMS_PER_BATCH = 4
-    cfg.SOLVER.BASE_LR = 0.0005
-    cfg.SOLVER.MAX_ITER = 500
+    cfg.SOLVER.BASE_LR = 0.00025
+    cfg.SOLVER.MAX_ITER = 4000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
+    cfg.TEST.SCORE_THRESH = 0.5
 
     # Training
     print('Training')
     trainer = DefaultTrainer(cfg)
-    #val_loss = ValidationLoss(cfg)
-    #trainer.register_hooks([val_loss])
-    #trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
+    val_loss = ValidationLoss(cfg)
+    trainer.register_hooks([val_loss])
+    trainer._hooks = trainer._hooks[:-2] + trainer._hooks[-2:][::-1]
     trainer.resume_or_load(resume=False)
     trainer.train()
 
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
     # Evaluation
     print('Evaluating')
     evaluator = COCOEvaluator('KITTI_val', cfg, False, output_dir=SAVE_PATH)
-    #trainer.model.load_state_dict(val_loss.weights)
+    trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
-    """
-    evaluator = COCOEvaluator("balloon_val", cfg, False, output_dir="./output/")
-    val_loader = build_detection_test_loader(cfg, "balloon_val")
-    inference_on_dataset(trainer.model, val_loader, evaluator)
-    """
-    #print('Plotting losses')
-    #plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, exp_name, SAVE_PATH, 'validation_loss.png')
+    print('Plotting losses')
+    plot_validation_loss(cfg, cfg.SOLVER.MAX_ITER, exp_name, SAVE_PATH, 'validation_loss.png')
 
     # Qualitative results: visualize some results
     print('Getting qualitative results')
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7 
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
     inputs = rkitti_test()
