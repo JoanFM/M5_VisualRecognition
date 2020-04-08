@@ -15,7 +15,7 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 from .utils import KittiMots
-from .utils import KITTI_CATEGORIES
+from .utils import KITTI_CATEGORIES, TEST_INFERENCE_VALUES
 from .utils import ValidationLoss, plot_validation_loss
 
 
@@ -66,7 +66,8 @@ def experiment_1(exp_name, model_file):
 
     # Evaluation
     print('Evaluating')
-    evaluator = COCOEvaluator('KITTI_val', cfg, False, output_dir=SAVE_PATH)
+    cfg.DATASETS.TEST = ('KITTI_test')
+    evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
     print('Plotting losses')
@@ -77,7 +78,7 @@ def experiment_1(exp_name, model_file):
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
     inputs = rkitti_test()
-    inputs = inputs[:20] + inputs[-20:]
+    inputs = [inputs[i] for i in TEST_INFERENCE_VALUES]
     for i, input in enumerate(inputs):
         file_name = input['file_name']
         print('Prediction on image ' + file_name)
