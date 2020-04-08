@@ -30,7 +30,7 @@ def experiment_3(exp_name, model_file, checkpoint=None):
     def rkitti_train(): return kittiloader.get_dicts(flag='train', method='complete', percentage= 1.0)
     def rkitti_val(): return kittiloader.get_dicts(flag='val')
     def rkitti_test(): return kittiloader.get_dicts(flag='test')
-    DatasetCatalog.register('KITTI_train', vkitti_train)
+    DatasetCatalog.register('KITTI_train', rkitti_train)
     MetadataCatalog.get('KITTI_train').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     DatasetCatalog.register('KITTI_val', rkitti_val)
     MetadataCatalog.get('KITTI_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))

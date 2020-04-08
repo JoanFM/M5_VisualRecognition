@@ -14,7 +14,7 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 from .utils import KittiMots, VirtualKitti
-from .utils import KITTI_CATEGORIES
+from .utils import KITTI_CATEGORIES, TEST_INFERENCE_VALUES
 from .utils import ValidationLoss, plot_validation_loss
 
 
@@ -34,13 +34,13 @@ def experiment_4(exp_name, model_file, method):
     MetadataCatalog.get('KITTI_val').set(thing_classes=list(KITTI_CATEGORIES.keys()))
     DatasetCatalog.register('KITTI_test', rkitti_test)
     MetadataCatalog.get('KITTI_test').set(thing_classes=list(KITTI_CATEGORIES.keys()))
+    virtual = virtualoader.get_dicts()
 
     for per in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]:
         print('Iteration 100% Virtual & {0}% Real'.format(per*100))
         if os.path.isfile(os.path.join(SAVE_PATH, 'metrics.json')):
             os.remove(os.path.join(SAVE_PATH, 'metrics.json'))
         def vkitti_train():
-            virtual = virtualoader.get_dicts()
             real = kittiloader.get_dicts(flag='train', method=method, percentage=per)
             all_data = virtual + real
             return all_data
@@ -54,18 +54,15 @@ def experiment_4(exp_name, model_file, method):
         cfg.merge_from_file(model_zoo.get_config_file(model_file))
         cfg.DATASETS.TRAIN = (catalog_name, )
         cfg.DATASETS.TEST = ('KITTI_val', )
-        cfg.DATALOADER.NUM_WORKERS = 0
+        cfg.DATALOADER.NUM_WORKERS = 4
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
         cfg.OUTPUT_DIR = SAVE_PATH
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_file)
         cfg.SOLVER.IMS_PER_BATCH = 4
-        cfg.SOLVER.BASE_LR = 0.0005
-        cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
-        cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
-        cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
+        cfg.SOLVER.BASE_LR = 0.00025
         cfg.SOLVER.MAX_ITER = 4000
         cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
         cfg.TEST.SCORE_THRESH = 0.5
 
         # Training
@@ -79,6 +76,7 @@ def experiment_4(exp_name, model_file, method):
 
         # Evaluation
         print('Evaluating')
+        cfg.DATASETS.TEST = ('KITTI_test', )
         evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
         trainer.model.load_state_dict(val_loss.weights)
         trainer.test(cfg, trainer.model, evaluators=[evaluator])
@@ -91,7 +89,7 @@ def experiment_4(exp_name, model_file, method):
         predictor = DefaultPredictor(cfg)
         predictor.model.load_state_dict(trainer.model.state_dict())
         inputs = rkitti_test()
-        inputs = inputs[:20] + inputs[-20:]
+        inputs = [inputs[i] for i in TEST_INFERENCE_VALUES]
         for i, input in enumerate(inputs):
             file_name = input['file_name']
             print('Prediction on image ' + file_name)

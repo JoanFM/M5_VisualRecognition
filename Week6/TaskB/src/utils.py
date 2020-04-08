@@ -157,7 +157,7 @@ class KittiMots():
             if not seg:
                 continue
             annotation = {
-                'category_id': 2,
+                'category_id': 2, 
                 'bbox_mode': BoxMode.XYXY_ABS,
                 'bbox': bbox,
                 'segmentation': seg,
