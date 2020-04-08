@@ -66,7 +66,7 @@ def experiment_1(exp_name, model_file):
 
     # Evaluation
     print('Evaluating')
-    cfg.DATASETS.TEST = ('KITTI_test')
+    cfg.DATASETS.TEST = ('KITTI_test', )
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
