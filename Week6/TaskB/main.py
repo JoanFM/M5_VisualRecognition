@@ -18,8 +18,8 @@ from src.experiment_4 import experiment_4
     """
 
 if __name__ == "__main__":
-    experiment_1('exp1','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml')
+    #experiment_1('exp1','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml')
     #experiment_2('exp2','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml')
-    #experiment_3('exp3','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml',checkpoint='results_week_6/exp2/model_final.pth')
+    experiment_3('exp3','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml',checkpoint='results_week_6_task_b/exp2/model_final.pth')
     #experiment_4('exp4','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml','complete')
     #experiment_4('exp4','COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml','random')

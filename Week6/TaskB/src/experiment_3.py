@@ -14,14 +14,14 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 from .utils import KittiMots
-from .utils import KITTI_CATEGORIES
+from .utils import KITTI_CATEGORIES, TEST_INFERENCE_VALUES
 from .utils import ValidationLoss, plot_validation_loss
 
 
 def experiment_3(exp_name, model_file, checkpoint=None):
 
     print('Running Task B experiment', exp_name)
-    SAVE_PATH = os.path.join('./results_week_6', exp_name)
+    SAVE_PATH = os.path.join('./results_week_6_task_b', exp_name)
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     # Loading data
@@ -43,7 +43,7 @@ def experiment_3(exp_name, model_file, checkpoint=None):
     cfg.merge_from_file(model_zoo.get_config_file(model_file))
     cfg.DATASETS.TRAIN = ('KITTI_train', )
     cfg.DATASETS.TEST = ('KITTI_val', )
-    cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.DATALOADER.NUM_WORKERS = 4
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.OUTPUT_DIR = SAVE_PATH
     if checkpoint:
@@ -55,13 +55,10 @@ def experiment_3(exp_name, model_file, checkpoint=None):
     else:
         raise ValueError('You forgot to put the chekpoint for this experiment')
     cfg.SOLVER.IMS_PER_BATCH = 4
-    cfg.SOLVER.BASE_LR = 0.0005
-    cfg.SOLVER.LR_SCHEDULER_NAME = 'WarmupMultiStepLR'
-    cfg.MODEL.RPN.IOU_THRESHOLDS = [0.2,0.8]
-    cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN = 12000
+    cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.MAX_ITER = 4000
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     cfg.TEST.SCORE_THRESH = 0.5
 
     # Training
@@ -75,6 +72,7 @@ def experiment_3(exp_name, model_file, checkpoint=None):
 
     # Evaluation
     print('Evaluating')
+    cfg.DATASETS.TEST = ('KITTI_test', )
     evaluator = COCOEvaluator('KITTI_test', cfg, False, output_dir=SAVE_PATH)
     trainer.model.load_state_dict(val_loss.weights)
     trainer.test(cfg, trainer.model, evaluators=[evaluator])
@@ -86,7 +84,7 @@ def experiment_3(exp_name, model_file, checkpoint=None):
     predictor = DefaultPredictor(cfg)
     predictor.model.load_state_dict(trainer.model.state_dict())
     inputs = rkitti_test()
-    inputs = inputs[:20] + inputs[-20:]
+    inputs = [inputs[i] for i in TEST_INFERENCE_VALUES]
     for i, input in enumerate(inputs):
         file_name = input['file_name']
         print('Prediction on image ' + file_name)
