@@ -20,11 +20,9 @@ from detectron2.structures import BoxMode
 
 # -- CONSTANTS -- #
 KITTI_CATEGORIES = {
-    'Dummy': 1,
-    'Car': 0, 
-}
-COCO_CATEGORIES = {
-    1: 2,
+    'Dummy2': -1,
+    'Dummy': 0,
+    'Car': 2
 }
 
 TRAIN_SEQ = [1,2,6,18,20]
@@ -134,7 +132,8 @@ class KittiMots():
         frame_annotations = []
         for detection in frame_lines:
             category_id = int(detection[2])
-            if category_id not in KITTI_CATEGORIES.values():
+            # if category_id not in KITTI_CATEGORIES.values():
+            if category_id != 1:
                 continue
             rle = {
                 'counts': detection[-1].strip(),
