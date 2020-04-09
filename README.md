@@ -33,3 +33,35 @@ Overleaf link to view project report: https://www.overleaf.com/read/cdsfkrqrngrp
 ## Run tensorboard:
 Indcluded a file experiment containing an example of logs and events tracked by tensorboard. To look at them in your browser run:
 tensorboard --logdir experiment/ --port XXXX
+
+## SetUp DeepLab v3+:
+To run training with DeepLabV3+ and to reproduce the results obtained in the paper [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/pdf/1802.02611.pdf) with CityScapes dataset one needs to follow these steps:
+
+1 - Clone tensorflow models from https://github.com/tensorflow/models.git.
+
+2 - From tensorflow/models/research/deeplab/datasets:
+
+  2.1 - Obtain or download cityscapes dataset from https://www.cityscapes-dataset.com/ (Note that you need to register)
+  
+  2.2 - Clone https://github.com/mcordts/cityscapesScripts.git
+  
+  2.3 - Run sh convert_cityscapes.sh
+  
+  2.4 - This will generate a folder tfrecords with a recommended structure like this:
+  
+        ```
+        + datasets
+          + cityscapes
+            + leftImg8bit
+              + gtFine
+              + tfrecord
+              + exp
+              + train_on_train_set
+                + train
+                + eval
+                + vis
+        ```
+        
+  2.5 - Inside the tfrecord folder move train* to train_fine* and val* to val_fine* to be able to train on train_fine dataset.
+  
+  2.6 - Do not forhet to export PYTHONPATH as ```export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim``` from tensorflow/models/research
