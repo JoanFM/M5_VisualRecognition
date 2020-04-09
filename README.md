@@ -102,6 +102,50 @@ python deeplab/train.py \
 ```
 
 where the model_variant must be chosen between xception_65 and xception_71, --decoder_output_stride=4 must be provided if Decoder is present, and --add_image_level_feature is either True or False depending on the presence of Image Level Features. 
-The Initial checkpoint is chosen to be xception_65 pretrained on imageNet.
+The Initial checkpoint is chosen to be xception_65 or xception_71 pretrained on imageNet taken from https://github.com/tensorflow/models/blob/master/research/deeplab/g3doc/model_zoo.md. Please note that PATH_TO_DATASET must point to the tfrecord/ folder.
+
+To evaluate the script base is: 
+```bash
+# From tensorflow/models/research/
+python deeplab/eval.py \
+    --logtostderr \
+    --eval_split="val_fine" \
+    --model_variant="xception_65 OR xception_71" \
+    --atrous_rates=6 \
+    --atrous_rates=12 \
+    --atrous_rates=18 \
+    --output_stride=16 \
+    --decoder_output_stride=4 \ IF DECODER IS ACTIVATED 
+    --add_image_level_feature=True OR False \
+    --eval_crop_size="1025,2049" \
+    --dataset="cityscapes" \
+    --checkpoint_dir=${PATH_TO_CHECKPOINT} \
+    --eval_logdir=${PATH_TO_EVAL_DIR} \
+    --dataset_dir=${PATH_TO_DATASET}
+```
+
+where PATH_TO_CHECKPOINT_DIR points to the previous PATH_TO_TRAIN_DIR
+
+And to visualize the model qualitatively on the val_fine set:
+```bash
+# From tensorflow/models/research/
+python deeplab/vis.py \
+    --logtostderr \
+    --vis_split="val_fime" \
+    --model_variant="xception_65 OR xception_71" \
+    --atrous_rates=6 \
+    --atrous_rates=12 \
+    --atrous_rates=18 \
+    --output_stride=16 \
+    --decoder_output_stride=4 \ IF DECODER IS ACTIVATED 
+    --add_image_level_feature=True OR False \
+    --vis_crop_size="1025,2049" \
+    --dataset="cityscapes" \
+    --colormap_type="cityscapes" \
+    --checkpoint_dir=${PATH_TO_CHECKPOINT} \
+    --vis_logdir=${PATH_TO_VIS_DIR} \
+    --dataset_dir=${PATH_TO_DATASET}
+```
+
 
 
