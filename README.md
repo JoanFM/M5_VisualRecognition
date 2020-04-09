@@ -65,3 +65,43 @@ To run training with DeepLabV3+ and to reproduce the results obtained in the pap
   2.5 - Inside the tfrecord folder move train* to train_fine* and val* to val_fine* to be able to train on train_fine dataset.
   
   2.6 - Do not forhet to export PYTHONPATH as ```export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim``` from tensorflow/models/research
+  
+
+## Run DeepLab v3+ experiments:
+
+The experiments needed to take in this tasks are to run the DeepLabv3+ architecture with 4 different modes that can be summarized in a table.
+
+ModelType| Network backbone | Decoder | ASPP  | ImageLevelFeatures
+---------| :--------------: | :------:| :---: | :-----------------:
+1 | Xception_65 | NO | YES | YES
+2 | Xception_65 | YES | YES | YES
+3 | Xception_65 | YES | YES | NO
+4 | Xception_71 | YES | YES | NO
+
+To train the model the basic script is:
+
+```bash
+# From tensorflow/models/research/
+python deeplab/train.py \
+    --logtostderr \
+    --training_number_of_steps=90000 \
+    --train_split="train_fine" \
+    --model_variant="xception_65 OR xception_71" \
+    --atrous_rates=6 \ THESE ATROUS RATES ACTIVATE ASPP
+    --atrous_rates=12 \
+    --atrous_rates=18 \
+    --output_stride=16 \
+    --decoder_output_stride=4 \ IF DECODER IS ACTIVATED 
+    --add_image_level_feature=True OR False \
+    --train_crop_size="769,769" \
+    --train_batch_size=1 \
+    --dataset="cityscapes" \
+    --tf_initial_checkpoint=${PATH_TO_INITIAL_CHECKPOINT} \
+    --train_logdir=${PATH_TO_TRAIN_DIR} \
+    --dataset_dir=${PATH_TO_DATASET}
+```
+
+where the model_variant must be chosen between xception_65 and xception_71, --decoder_output_stride=4 must be provided if Decoder is present, and --add_image_level_feature is either True or False depending on the presence of Image Level Features. 
+The Initial checkpoint is chosen to be xception_65 pretrained on imageNet.
+
+
