@@ -29,6 +29,7 @@ Under the folders WeekX we have the work of each week.
 
 ### Overleaf
 Overleaf link to view project report: https://www.overleaf.com/read/cdsfkrqrngrp
+Overleaf link to view the Final Report: https://www.overleaf.com/read/sqkbpxvvpxqp
 
 ## Run tensorboard:
 Indcluded a file experiment containing an example of logs and events tracked by tensorboard. To look at them in your browser run:
