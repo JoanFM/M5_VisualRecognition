@@ -27,6 +27,9 @@ Under the folders WeekX we have the work of each week.
 ### Week 5
 - Google slides presenting the work done can be seen in the global slides for the project, as well as more detailed slides in the following link: https://docs.google.com/presentation/d/1bxxUZpxozHgp5d3HXVT6fNFPuT1I-fMn7TkjpsytwTY/edit#slide=id.g72385ef41b_0_80
 
+### Week 6
+- Google slides presenting the work done can be seen in the global slides for the project, as well as more detailed slides in the following link: https://docs.google.com/presentation/d/1UJe9jiyvsf9Mf0i2SwnZ1qnbBGpV8IfEuS9nlDD-vWg/edit#slide=id.g73579ab71c_0_36
+
 ### Overleaf
 Overleaf link to view project report: https://www.overleaf.com/read/cdsfkrqrngrp. 
 
